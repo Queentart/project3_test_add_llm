@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5,127 +6,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 이미지 생성기</title>
     
-    {% load static %} 
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    {# 파비콘 추가: static/images/favicon.ico 파일이 존재해야 합니다. #}
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-    <style>
-        /* 기존 스타일 중 HTML에 직접 넣었던 스피너, 컨테이너 숨김 등 부트스트랩 클래스와 겹치지 않는 부분 또는 커스텀 필요한 부분은 여기 남겨두거나 style.css로 옮기세요 */
-        #loadingSpinner {
-            display: none; /* 초기에는 숨김 */
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto; /* 중앙 정렬 */
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #imageResultContainer {
-            display: none; /* 초기에는 이미지 결과 컨테이너 전체를 숨김 */
-        }
-        #downloadButton {
-            display: none; /* 초기에는 숨김 */
-        }
-        /* 생성된 이미지 스타일 조정 */
-        #imageResults img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        /* 드래그 앤 드롭 영역 스타일 */
-        #dropArea {
-            border: 2px dashed #007bff; /* 파란색 점선 테두리 */
-            border-radius: 5px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            background-color: #f8f9fa; /* 밝은 회색 배경 */
-            transition: background-color .3s ease, border-color .3s ease;
-        }
-        #dropArea.highlight {
-            background-color: #e2e6ea; /* 드래그 중 배경색 변경 */
-            border-color: #0056b3; /* 드래그 중 테두리색 변경 */
-        }
-        #dropArea p {
-            margin: 0;
-            color: #6c757d; /* 회색 텍스트 */
-        }
-        #dropArea input[type="file"] {
-            display: none; /* 실제 파일 입력 필드는 숨김 */
-        }
-        #selectedImagePreview {
-            max-width: 100%;
-            max-height: 150px; /* 미리보기 이미지 최대 높이 */
-            margin-top: 10px;
-            border-radius: 5px;
-            display: none; /* 초기에는 숨김 */
-        }
-    </style>
 </head>
 <body>
-    <div class="container my-5">
-        <h1 class="mb-4 text-center">AI 이미지 생성</h1>
+    <div class="container mt-5 p-4 border rounded shadow">
+        <h1 class="text-center mb-4">AI 이미지 생성기</h1>
 
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <form id="imageGenerationForm" class="p-4 border rounded shadow-sm">
-                    <div class="mb-4">
-                        <label for="input_image_file" class="form-label">참조 이미지 (선택 사항):</label>
-                        <div id="dropArea" class="mt-2">
-                            <p>이미지를 여기에 드래그하거나 클릭하여 업로드</p>
-                            <input type="file" id="input_image_file" name="input_image" accept="image/*">
-                            <img id="selectedImagePreview" src="#" alt="선택된 이미지 미리보기">
-                        </div>
+        <form id="imageGenerationForm">
+            {# 이미지를 업로드 하는 부분 - 제일 위로 이동 #}
+            <div class="mb-3">
+                <label for="fileInput" class="form-label">참조 이미지 (선택 사항):</label>
+                <div id="dropArea" class="form-control">
+                    <p id="dropAreaText">이미지를 여기에 드래그하거나 클릭하여 업로드</p>
+                    <i id="uploadIcon" class="bi bi-cloud-arrow-up"></i> {# 아이콘 추가, 스타일은 CSS로 이동 #}
+                    <div id="imagePreviewWrapper"> {# 인라인 스타일 제거됨 #}
+                        <img id="selectedImagePreview" src="#" alt="Image Preview">
+                        <button type="button" id="clearImageButton" class="btn-close" aria-label="Clear image"></button> {# 인라인 스타일 제거됨 #}
                     </div>
-
-                    <div class="mb-3">
-                        <label for="prompt" class="form-label">긍정 프롬프트:</label>
-                        <textarea class="form-control" id="prompt" name="prompt" rows="4" required
-                            placeholder="A beautiful woman, inspired by Kim Tae-hee, reimagined in the distinct anime art style of Sailor Moon, maintaining the original photo's color palette, vibrant colors, large expressive eyes, delicate features, magical girl aesthetics, clean line art, luminous skin, dynamic pose, high detail, studio anime lighting, cel-shaded, animated movie still, solo.">
-                        </textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="negative_prompt" class="form-label">부정 프롬프트:</label>
-                        <textarea class="form-control" id="negative_prompt" name="negative_prompt" rows="4"
-                            placeholder="Photorealistic, smooth skin, bland colors, flat lighting, anime, cartoon, sketch, monochrome, low detail, blurry, deformed, ugly, extra limbs, bad anatomy, grayscale, watermark, text, signature, man, male, beard, mustache, muscular, masculine, strong jawline, broad shoulders, large hands.">
-                        </textarea>
-                    </div>
-
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">이미지 생성</button>
-                    </div>
-                </form>
-
-                <div class="text-center my-4">
-                    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <div id="statusMessage" class="mt-2 fw-bold"></div>
-                </div>
-
-                <div id="imageResultContainer" class="text-center my-4">
-                    <h2 class="mb-3">생성된 이미지</h2>
-                    <div id="imageResults" class="mb-3">
-                        </div>
-                    <button id="downloadButton" class="btn btn-success btn-lg">이미지 다운로드</button>
+                    <input type="file" id="fileInput" name="input_image" accept="image/*">
                 </div>
             </div>
+
+            {# 긍정 프롬프트 입력 부분 #}
+            <div class="mb-3">
+                <label for="promptInput" class="form-label">긍정 프롬프트:</label>
+                <textarea class="form-control" id="promptInput" name="prompt" rows="3" placeholder="생성하고 싶은 이미지에 대한 자세한 설명을 입력하세요."></textarea>
+            </div>
+
+            {# 부정 프롬프트 입력 부분 #}
+            <div class="mb-3">
+                <label for="negativePromptInput" class="form-label">부정 프롬프트:</label>
+                <textarea class="form-control" id="negativePromptInput" name="negative_prompt" rows="3" placeholder="이미지에 포함되지 않아야 할 요소를 입력하세요. (선택 사항)"></textarea>
+            </div>
+
+            <button type="button" id="generateButton" class="btn btn-primary w-100">이미지 생성</button>
+        </form>
+
+        <div id="loadingSpinner" class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p id="statusMessage" class="text-center mt-3"></p>
+
+        <div id="imageResultContainer" class="mt-4">
+            <h2 class="text-center mb-3">생성된 이미지:</h2>
+            <div id="imageResults">
+                </div>
+            <a href="#" id="downloadButton" class="btn btn-success d-block mx-auto mt-3">이미지 다운로드</a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
     <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

@@ -146,6 +146,46 @@ COMFYUI_HISTORY_URL = 'http://127.0.0.1:8188/history'
 COMFYUI_IMAGE_URL = 'http://127.0.0.1:8188/view'
 
 
+# 로깅 설정 (디버깅을 위해 DEBUG 레벨로 설정)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            # 여기서 settings.DEBUG 대신 그냥 DEBUG를 사용합니다.
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            # 여기서 settings.DEBUG 대신 그냥 DEBUG를 사용합니다.
+            'level': 'DEBUG' if DEBUG else 'INFO', # DEBUG 모드일 때 DEBUG 레벨, 아니면 INFO
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose' if DEBUG else 'simple', # 여기서도 DEBUG 사용
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG', # 모든 로거의 기본 레벨을 DEBUG로 설정
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'), # Django 자체 로그는 INFO 레벨
+            'propagate': False,
+        },
+        'image_generator': { # image_generator 앱의 로거
+            'handlers': ['console'],
+            'level': 'DEBUG', # 이 앱의 로그는 DEBUG 레벨로 출력
+            'propagate': False,
+        },
+    }
+}
 # --- CORS (Cross-Origin Resource Sharing) Settings ---
 # 'corsheaders' 앱을 설치해야 합니다: pip install django-cors-headers
 # INSTALLED_APPS에 'corsheaders' 추가하고, MIDDLEWARE에 'corsheaders.middleware.CorsMiddleware' 추가

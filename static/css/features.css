@@ -1,0 +1,143 @@
+/* myapp/static/css/features.css */
+
+/* 히어로 섹션 */
+.features-hero {
+    background-color: #C9CFBD; /* about.html의 히어로 색상과 통일 */
+    padding: 6rem 2rem;
+    text-align: center;
+    color: #4a4a4a;
+}
+
+.features-hero h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.features-hero p {
+    font-size: 1.5rem;
+    color: #666;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 개별 기능 섹션 (챗봇, 이미지 생성 등) */
+.feature-section {
+    max-width: 1000px;
+    margin: 6rem auto; /* 섹션 간 간격 */
+    padding: 2rem;
+    text-align: center;
+}
+
+.feature-section .content-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 3rem; /* 텍스트와 이미지 사이 간격 */
+    text-align: left;
+    margin-top: 3rem;
+}
+
+.feature-section .text-content {
+    flex: 1;
+}
+
+.feature-section .text-content h2 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.feature-section .text-content p {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.feature-section .text-content ul {
+    list-style: none; /* 기본 리스트 스타일 제거 */
+    padding: 0;
+    margin: 0;
+}
+
+.feature-section .text-content ul li {
+    font-size: 1.05rem;
+    color: #444;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem; /* 아이콘과 텍스트 사이 간격 */
+}
+
+.feature-section .text-content ul li i.bi { /* 부트스트랩 아이콘 스타일 */
+    color: #7A9E9F; /* 포인트 색상 */
+    font-size: 1.2em; /* 아이콘 크기 */
+}
+
+.feature-section .image-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feature-section .image-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px; /* 이미지 모서리 둥글게 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); /* 더 부드러운 그림자 */
+}
+
+/* 개별 이미지의 수직 위치 조절 */
+.feature-section .image-content .image-chatbot {
+    margin-top: -80px; /* 챗봇 이미지를 위로 30px 올림 (음수 마진) */
+    /* 또는 padding-bottom: 30px; 으로 부모 요소에 여백을 주어 아래로 밀어낼 수도 있습니다. */
+    /* 필요에 따라 px 값을 조절해주세요. */
+}
+
+.feature-section .image-content .image-image-generation {
+    margin-top: 80px; /* 이미지 생성 이미지를 아래로 30px 내림 (양수 마진) */
+    /* 또는 padding-top: 30px; 으로 부모 요소에 여백을 주어 아래로 밀어낼 수도 있습니다. */
+    /* 필요에 따라 px 값을 조절해주세요. */
+}
+/* 이미지와 텍스트 좌우 반전 섹션 */
+.feature-section.reverse-layout .content-wrapper {
+    flex-direction: row-reverse; /* 좌우 순서 변경 */
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .features-hero h1 {
+        font-size: 2.8rem;
+    }
+
+    .features-hero p {
+        font-size: 1.2rem;
+    }
+
+    .feature-section .content-wrapper {
+        flex-direction: column; /* 모바일에서는 세로로 쌓이도록 변경 */
+        text-align: center;
+    }
+
+    .feature-section .image-content {
+        margin-top: 2rem; /* 이미지 위 여백 */
+    }
+
+    .feature-section .text-content ul {
+        text-align: left; /* 리스트는 여전히 왼쪽 정렬 유지 */
+        margin-left: 2rem; /* 들여쓰기 */
+    }
+
+    .feature-section.reverse-layout .content-wrapper {
+        flex-direction: column; /* 모바일에서 반전 레이아웃도 세로로 쌓이도록 */
+    }
+
+    .feature-section .image-content .image-chatbot,
+    .feature-section .image-content .image-image-generation {
+        margin-top: 0; /* 모바일에서는 수직 마진 제거 또는 기본값으로 */
+    }
+}
+
+/* 애니메이션 딜레이 (필요시 각 HTML 요소에 inline style로 추가) */
+/* .animate__fadeInLeft, .animate__fadeInRight 등 Animate.css 클래스 활용 */

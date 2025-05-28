@@ -1,0 +1,120 @@
+/* myapp/static/css/welcome.css */
+
+/* 웰컴 페이지 섹션 스타일 */
+.welcome-section {
+    width: 100%;
+    max-width: 1200px;
+    display: flex; /* 좌우 콘텐츠를 위한 Flexbox 적용 */
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: space-around; /* 좌우 콘텐츠 간 간격 조절 */
+    padding: 4rem 2rem; /* 전체 섹션 패딩 조정 */
+}
+
+/* 웰컴 텍스트 영역 */
+.welcome-text {
+    flex: 1; /* 가용 공간을 차지하도록 설정 */
+    max-width: 50%; /* 텍스트 영역의 최대 너비 제한 */
+    text-align: left; /* 텍스트 왼쪽 정렬 */
+    padding-right: 3rem; /* 이미지와의 간격 */
+    color: #222; /* 텍스트 색상 좀 더 진하게 */
+}
+
+.welcome-text h1 {
+    font-size: 3.8rem;
+    color: #4a4a4a;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.welcome-text p {
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.btn-start {
+    display: inline-block;
+    background-color: #7A9E9F;
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-start:hover {
+    background-color: #5D8788;
+    transform: translateY(-2px);
+}
+
+/* 웰컴 이미지 영역 */
+.welcome-images {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 2rem;
+    max-width: 50%;
+}
+
+.large-image, .small-image {
+    margin-bottom: 2rem;
+    line-height: 0;
+}
+
+.large-image img, .small-image img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.large-image {
+    width: 80%;
+}
+
+.small-image {
+    width: 60%;
+    margin-top: -50px;
+    margin-left: 50%;
+    z-index: 1;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        padding: 2rem 1rem;
+    }
+
+    .welcome-text, .welcome-images {
+        max-width: 100%;
+        padding: 0;
+        text-align: center;
+    }
+
+    .welcome-text {
+        margin-bottom: 2rem;
+    }
+
+    .large-image, .small-image {
+        width: 100%;
+        margin: 1rem auto;
+    }
+    
+    .small-image {
+        margin-top: 1rem;
+        margin-left: 0;
+    }
+
+    .welcome-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .welcome-text p {
+        font-size: 1.1rem;
+    }
+}

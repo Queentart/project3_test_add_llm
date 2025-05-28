@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}소개 - AI Chatbot & Image Generation{% endblock %}
+
+{% block head_extra %}
+    {# 이 페이지 전용 CSS 링크 #}
+    <link rel="stylesheet" href="{% static 'css/about.css' %}">
+    {# 파비콘 아이콘 폰트 라이브러리 (예: Font Awesome) 링크 필요 #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block content %}
+    <section class="about-hero animate__animated animate__fadeInUp">
+        <h1>저희는<br> 무엇을<br> 하나요?</h1>
+        <p>AI 기술이 예술과 소통의<br> 새로운 지평을 엽니다.</p>
+    </section>
+
+    <section class="about-section about-what-we-do">
+        <div class="content-wrapper">
+            <div class="text-content animate__animated animate__fadeInLeft">
+                <h2>상상력을 현실로 만드는 도구</h2>
+                <p>저희 서비스는 인공지능 기반의 챗봇과 이미지 생성 기능을<br> 결합하여 사용자에게 독창적인 경험을 제공합니다.<br> 예술적 영감을 얻거나, 복잡한 질문에 대한 심층적인 답변을<br> 얻거나, 자신만의 시각적 콘텐츠를 손쉽게 만들어낼 수 있습니다.</p>
+                <p>기술의 장벽 없이 누구나 창의적인 활동에 참여하고,<br> 새로운 아이디어를 탐색하며, 지식의 폭을 넓힐 수 있도록<br> 지원합니다.</p>
+            </div>
+            <div class="image-content animate__animated animate__fadeInRight">
+                {# AI 도슨트 이미지로 교체 #}
+                <img src="{% static 'images/3.png' %}" alt="AI 서비스 개념 이미지"> {# 이 부분의 이미지 경로를 올바르게 설정해주세요. #}
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section about-values">
+        <h2>우리의 핵심 가치</h2>
+        <div class="values-grid">
+            <div class="value-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                <i class="bi bi-lightbulb"></i> {# 실제 파비콘 클래스로 변경 필요 #}
+                <h3>창의성 증진</h3>
+                <p>AI를 통해 사용자 내면의 창의력을<br> 자극하고 새로운 영감을 불어넣습니다.</p>
+            </div>
+            <div class="value-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                <i class="bi bi-chat-dots"></i> {# 실제 파비콘 클래스로 변경 필요 #}
+                <h3>소통의 확장</h3>
+                <p>질의응답을 넘어선 깊이 있는 대화와<br> 시각적 표현을 통해 소통의 지평을<br> 넓힙니다.</p>
+            </div>
+            <div class="value-item animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+                <i class="bi bi-robot"></i> {# 실제 파비콘 클래스로 변경 필요 #}
+                <h3>기술 접근성</h3>
+                <p>복잡한 AI 기술을 누구나 쉽게 이해하고 활용할 수 있도록 직관적인<br> 인터페이스를 제공합니다.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

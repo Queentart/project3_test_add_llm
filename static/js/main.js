@@ -1,235 +1,246 @@
-// script.js
+// static/js/main.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    const dropArea = document.getElementById('dropArea');
-    const fileInput = document.getElementById('fileInput');
-    const selectedImagePreview = document.getElementById('selectedImagePreview');
-    const imagePreviewWrapper = document.getElementById('imagePreviewWrapper');
-    const clearImageButton = document.getElementById('clearImageButton');
-    const dropAreaText = document.getElementById('dropAreaText');
-    const uploadIcon = document.getElementById('uploadIcon'); // 아이콘 요소 추가
+    // 1. HTML 요소 참조 가져오기
+    const chatHistory = document.getElementById('chat-history');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const imageUploadInput = document.getElementById('image-upload-input');
+    const imagePreviewArea = document.getElementById('image-preview-area');
+    const uploadedImageThumbnail = document.getElementById('uploaded-image-thumbnail');
+    const uploadedImageName = document.getElementById('uploaded-image-name');
+    const removeImageButton = document.getElementById('remove-image-button');
+    const modeToggleButton = document.getElementById('mode-toggle-button'); // 이제 input[type="checkbox"]를 가리킵니다.
 
-    const promptInput = document.getElementById('promptInput');
-    const negativePromptInput = document.getElementById('negativePromptInput');
-    const generateButton = document.getElementById('generateButton');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const statusMessage = document.getElementById('statusMessage');
-    const imageResultContainer = document.getElementById('imageResultContainer');
-    const imageResultsDiv = document.getElementById('imageResults');
-    const downloadButton = document.getElementById('downloadButton');
+    let currentConversationId = 'new-chat'; // 현재 대화 ID (초기값 'new-chat')
+    let selectedImageFile = null; // 업로드할 이미지 파일
+    let currentMode = 'curator'; // 현재 챗봇 모드: 'curator' (도슨트) 또는 'image_generation' (이미지 생성)
 
-    let statusCheckInterval; // 상태 확인을 위한 인터벌 변수
+    // 2. 메시지 표시 함수
+    function displayMessage(sender, text, imageUrl = null) {
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('message-bubble', sender);
 
-    // =========================================================
-    // 이미지 파일 업로드 및 미리보기 관련 로직
-    // =========================================================
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('message-content');
+        messageContent.textContent = text;
+        messageBubble.appendChild(messageContent);
 
-    // 파일 입력 필드 변경 감지 (클릭으로 파일 선택 시)
-    fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            displayImagePreview(this.files[0]);
-        } else {
-            hideImagePreview(); // 파일 선택 취소 시 미리보기 숨김
+        if (imageUrl) {
+            const imgElement = document.createElement('img');
+            imgElement.src = imageUrl;
+            imgElement.alt = "생성된 이미지";
+            imgElement.classList.add('image-message');
+            messageBubble.appendChild(imgElement);
         }
-    });
 
-    // 드롭 영역 클릭 시 파일 입력 필드 클릭 (팝업 열기)
-    dropArea.addEventListener('click', function(event) {
-        // 이미지 미리보기, X 버튼, 아이콘 클릭 시 파일 선택 팝업이 다시 뜨는 것을 방지
-        if (event.target.id === 'selectedImagePreview' || 
-            event.target.id === 'clearImageButton' ||
-            event.target.id === 'uploadIcon') {
-            return;
-        }
-        fileInput.click();
-    });
-
-    // 드래그앤드롭 이벤트 처리
-    dropArea.addEventListener('dragover', (event) => {
-        event.preventDefault(); // 기본 동작 방지 (새 탭에서 파일 열림 방지)
-        dropArea.classList.add('highlight');
-        dropAreaText.textContent = '여기에 이미지 드롭';
-        uploadIcon.style.display = 'none'; // 드래그 중에는 아이콘 숨김
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-        dropArea.classList.remove('highlight');
-        // 이미지가 이미 표시되어 있으면 텍스트와 아이콘은 계속 숨김 상태 유지
-        if (imagePreviewWrapper.style.display !== 'block') {
-            dropAreaText.textContent = '이미지를 여기에 드래그하거나 클릭하여 업로드';
-            dropAreaText.style.display = 'block'; // 텍스트 보이게
-            uploadIcon.style.display = 'block'; // 아이콘 보이게
-        } else {
-             dropAreaText.textContent = '';
-             dropAreaText.style.display = 'none'; // 텍스트 숨김
-             uploadIcon.style.display = 'none'; // 아이콘 숨김
-        }
-    });
-
-    dropArea.addEventListener('drop', (event) => {
-        event.preventDefault();
-        dropArea.classList.remove('highlight');
-        const files = event.dataTransfer.files;
-        if (files.length > 0) {
-            fileInput.files = files; // 드롭된 파일을 fileInput에 할당
-            displayImagePreview(files[0]);
-        } else {
-            // 드롭된 파일이 없을 경우 (예: 폴더 드롭 등), 초기 상태로 복원
-            hideImagePreview(); // 이 함수는 파일 입력 필드도 초기화합니다.
-        }
-    });
-
-    // 이미지 미리보기 표시 함수
-    function displayImagePreview(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            selectedImagePreview.src = e.target.result;
-            imagePreviewWrapper.style.display = 'block'; // 래퍼를 보이게 함
-            dropAreaText.style.display = 'none'; // "드래그하거나 클릭하여 업로드" 텍스트 숨김
-            uploadIcon.style.display = 'none'; // 아이콘 숨김
-            clearImageButton.style.display = 'block'; // X 버튼 보이게 함
-        };
-        reader.readAsDataURL(file);
+        chatHistory.appendChild(messageBubble);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // 스크롤을 항상 최하단으로
     }
 
-    // 이미지 미리보기 숨김 및 초기화 함수
-    function hideImagePreview() {
-        selectedImagePreview.src = '#'; // 이미지 소스 초기화
-        imagePreviewWrapper.style.display = 'none'; // 래퍼를 숨김
-        dropAreaText.style.display = 'block'; // 텍스트 다시 보이게 함
-        uploadIcon.style.display = 'block'; // 아이콘 다시 보이게 함
-        clearImageButton.style.display = 'none'; // X 버튼 숨김
-        fileInput.value = ''; // 파일 입력 필드 값 초기화 (가장 중요!)
+    // [추가 사항] 알림 메시지 표시 함수
+    function displayNotification(message) {
+        const notificationBubble = document.createElement('div');
+        notificationBubble.classList.add('message-bubble', 'notification');
+        const notificationContent = document.createElement('div');
+        notificationContent.classList.add('message-content');
+        notificationContent.textContent = message;
+        notificationBubble.appendChild(notificationContent);
+        chatHistory.appendChild(notificationBubble);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        // 3초 후 알림 메시지 제거
+        setTimeout(() => {
+            notificationBubble.remove();
+        }, 3000);
     }
 
-    // X 버튼 클릭 이벤트 리스너 추가
-    clearImageButton.addEventListener('click', function(event) {
-        event.stopPropagation(); // 드롭 영역 클릭 이벤트가 발생하지 않도록 전파 중지
-        hideImagePreview();
-    });
+    // 3. 로딩 스피너 표시/숨김 함수
+    function showLoadingSpinner() {
+        const loadingBubble = document.createElement('div');
+        loadingBubble.classList.add('message-bubble', 'ai', 'loading-spinner');
+        loadingBubble.id = 'loading-spinner';
+        loadingBubble.innerHTML = `
+            <div class="message-content">
+                <div class="dot-pulse"></div>
+                <div class="dot-pulse"></div>
+                <div class="dot-pulse"></div>
+            </div>
+        `;
+        chatHistory.appendChild(loadingBubble);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
 
-    // 초기 로드 시 이미지 미리보기와 X 버튼 숨기기 (혹시 모를 초기 상태 불일치 방지)
-    hideImagePreview();
-
-
-    // =========================================================
-    // AI 이미지 생성 로직
-    // =========================================================
-
-    generateButton.addEventListener('click', function() {
-        // 기존 작업이 진행 중이면 중복 요청 방지
-        if (loadingSpinner.style.display === 'block') {
-            return;
+    function hideLoadingSpinner() {
+        const spinner = document.getElementById('loading-spinner');
+        if (spinner) {
+            spinner.remove();
         }
+    }
 
-        const prompt = promptInput.value;
-        const negativePrompt = negativePromptInput.value;
-        const imageFile = fileInput.files[0]; // 업로드된 이미지 파일
+    // 4. 메시지 전송 및 비동기 처리 함수 (가장 중요!)
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text && !selectedImageFile) return; // 텍스트나 이미지가 없으면 전송 안 함
 
-        if (!prompt.trim()) {
-            alert('긍정 프롬프트를 입력해주세요.');
-            return;
-        }
+        // 사용자 메시지 표시
+        displayMessage('user', text, selectedImageFile ? URL.createObjectURL(selectedImageFile) : null);
+        userInput.value = ''; // 입력 필드 초기화
+        
+        // 이미지 미리보기 초기화
+        imagePreviewArea.style.display = 'none';
+        uploadedImageThumbnail.src = '#';
+        uploadedImageName.textContent = '';
+        const tempSelectedImageFile = selectedImageFile; // 전송 후 초기화를 위해 임시 저장
+        selectedImageFile = null;
 
-        loadingSpinner.style.display = 'block';
-        statusMessage.textContent = '이미지 생성 요청 중...';
-        generateButton.disabled = true; // 버튼 비활성화
-        imageResultContainer.style.display = 'none'; // 결과 컨테이너 숨김
-        imageResultsDiv.innerHTML = ''; // 이전 결과 이미지 제거
-        downloadButton.style.display = 'none'; // 다운로드 버튼 숨김
+        sendButton.disabled = true; // 전송 중 버튼 비활성화
+        showLoadingSpinner(); // 로딩 스피너 표시
 
         const formData = new FormData();
-        formData.append('prompt', prompt);
-        formData.append('negative_prompt', negativePrompt);
-        if (imageFile) {
-            formData.append('input_image', imageFile);
+        formData.append('user_input', text);
+        formData.append('conversation_id', currentConversationId);
+        formData.append('mode', currentMode); // 현재 모드 전송
+
+        if (tempSelectedImageFile) {
+            formData.append('image_file', tempSelectedImageFile);
         }
 
-        fetch('/api/generate-image/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken') // CSRF 토큰 포함
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'accepted') {
-                statusMessage.textContent = data.message;
-                // 일정 간격으로 상태 확인
-                statusCheckInterval = setInterval(() => checkStatus(data.task_id), 2000); // 2초마다 확인
-            } else {
-                statusMessage.textContent = `오류: ${data.message}`;
-                loadingSpinner.style.display = 'none';
-                generateButton.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            statusMessage.textContent = '서버 통신 중 오류가 발생했습니다.';
-            loadingSpinner.style.display = 'none';
-            generateButton.disabled = false;
-        });
-    });
-
-    function checkStatus(taskId) {
-        fetch(`/api/task-status/${taskId}/`)
-            .then(response => response.json())
-            .then(data => {
-                statusMessage.textContent = data.message + ` (${data.progress}%)`; // 진행률 표시
-                
-                if (data.status === "SUCCESS") {
-                    clearInterval(statusCheckInterval); // 작업 완료 시 폴링 중지
-                    loadingSpinner.style.display = 'none'; // 로딩 스피너 숨김
-                    generateButton.disabled = false; // 버튼 다시 활성화
-                    imageResultContainer.style.display = 'block'; // 결과 컨테이너 표시
-                    
-                    if (data.images && data.images.length > 0) {
-                        imageResultsDiv.innerHTML = ''; // 이전 이미지 지우기
-                        data.images.forEach(image => {
-                            const imgElement = document.createElement('img');
-                            imgElement.src = image.url;
-                            imgElement.alt = image.name;
-                            imageResultsDiv.appendChild(imgElement);
-
-                            downloadButton.style.display = 'block'; // 다운로드 버튼 표시
-                            downloadButton.onclick = () => {
-                                // 이미지 다운로드 로직
-                                const a = document.createElement('a');
-                                a.href = image.url;
-                                a.download = image.name; // 다운로드될 파일명
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                            };
-                        });
-                    } else {
-                        statusMessage.textContent = "이미지 생성은 완료되었으나, 결과 이미지를 찾을 수 없습니다.";
-                    }
-                } else if (data.status === "FAILED" || data.status === "NOT_FOUND") {
-                    clearInterval(statusCheckInterval);
-                    loadingSpinner.style.display = 'none';
-                    generateButton.disabled = false;
-                    statusMessage.textContent = `오류: ${data.message}`;
-                }
-            })
-            .catch(error => {
-                console.error('Error checking status:', error);
-                clearInterval(statusCheckInterval);
-                loadingSpinner.style.display = 'none';
-                generateButton.disabled = false;
-                statusMessage.textContent = '상태 확인 중 오류가 발생했습니다.';
+        try {
+            // [비동기 처리] fetch API를 사용하여 백엔드 API 호출
+            const response = await fetch('/api/process_request/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'), // Django CSRF 토큰
+                },
+                body: formData // FormData 사용 시 Content-Type은 브라우저가 자동으로 설정
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '서버 응답 오류');
+            }
+
+            const data = await response.json();
+            console.log("Server response:", data);
+
+            if (data.status === 'processing' && data.task_id) {
+                // 이미지 생성과 같이 장시간이 필요한 작업은 task_id를 받아 폴링
+                pollTaskStatus(data.task_id);
+            } else if (data.status === 'success' && data.ai_response) {
+                // 큐레이터 모드처럼 즉시 응답이 오는 경우
+                hideLoadingSpinner();
+                displayMessage('ai', data.ai_response);
+                currentConversationId = data.conversation_id; // 새 대화 시작 시 ID 업데이트
+            } else {
+                hideLoadingSpinner();
+                displayMessage('ai', '응답을 처리하는 데 문제가 발생했습니다.');
+            }
+
+        } catch (error) {
+            hideLoadingSpinner();
+            console.error('Error sending message:', error);
+            displayMessage('ai', `오류 발생: ${error.message || '메시지를 전송할 수 없습니다.'}`);
+        } finally {
+            sendButton.disabled = false; // 전송 완료 후 버튼 활성화
+        }
     }
 
-    // CSRF 토큰 가져오기 함수 (Django에서 필요)
+    // 5. 작업 상태 폴링 함수 (이미지 생성 등 비동기 작업용)
+    async function pollTaskStatus(taskId) {
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/task-status/${taskId}/`);
+                const data = await response.json();
+                console.log(`Task ${taskId} status:`, data.status, data.message);
+
+                if (data.status === 'SUCCESS') {
+                    clearInterval(pollInterval);
+                    hideLoadingSpinner();
+                    displayMessage('ai', data.message, data.image_url);
+                    currentConversationId = data.conversation_id; // 대화 ID 업데이트
+                } else if (data.status === 'FAILURE') {
+                    clearInterval(pollInterval);
+                    hideLoadingSpinner();
+                    displayMessage('ai', `작업 실패: ${data.message}`);
+                } else {
+                    // PENDING 또는 PROGRESS 상태, 계속 폴링
+                    // 필요하다면 진행률 업데이트 로직 추가 (예: 스피너 옆에 % 표시)
+                }
+            } catch (error) {
+                clearInterval(pollInterval);
+                hideLoadingSpinner();
+                console.error('Error polling task status:', error);
+                displayMessage('ai', `작업 상태 확인 중 오류 발생: ${error.message}`);
+            }
+        }, 2000); // 2초마다 폴링
+    }
+
+    // 6. 이벤트 리스너
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !sendButton.disabled) { // 엔터 키 입력 시 전송
+            sendMessage();
+        }
+    });
+
+    // 이미지 업로드 입력 변경 시 미리보기 업데이트
+    imageUploadInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            selectedImageFile = file;
+            uploadedImageThumbnail.src = URL.createObjectURL(file);
+            uploadedImageName.textContent = file.name;
+            imagePreviewArea.style.display = 'flex';
+        } else {
+            selectedImageFile = null;
+            imagePreviewArea.style.display = 'none';
+            uploadedImageThumbnail.src = '#';
+            uploadedImageName.textContent = '';
+        }
+    });
+
+    // 이미지 미리보기 제거 버튼
+    removeImageButton.addEventListener('click', function() {
+        selectedImageFile = null;
+        imageUploadInput.value = ''; // input file 값 초기화
+        imagePreviewArea.style.display = 'none';
+        uploadedImageThumbnail.src = '#';
+        uploadedImageName.textContent = '';
+    });
+
+    // [수정 사항] 모드 토글 버튼 이벤트 리스너 (체크박스용)
+    modeToggleButton.addEventListener('change', function() { // click 대신 change 이벤트 사용
+        if (this.checked) { // 체크박스가 체크되면 이미지 생성 모드
+            currentMode = 'image_generation';
+            userInput.placeholder = '이미지 생성 프롬프트를 입력하세요 (예: 푸른 하늘을 나는 용)';
+            document.querySelector('.image-upload-button').style.display = 'flex';
+            displayNotification("이미지 생성 모드가 활성화되었습니다."); // [추가 사항] 알림 표시
+        } else { // 체크박스가 체크 해제되면 큐레이터 모드
+            currentMode = 'curator';
+            userInput.placeholder = '메시지를 입력하거나 이미지 생성 프롬프트를 입력하세요...';
+            document.querySelector('.image-upload-button').style.display = 'none';
+            removeImageButton.click(); // 이미지 미리보기 초기화 함수 호출
+            displayNotification("AI 도슨트 모드가 활성화되었습니다."); // [추가 사항] 알림 표시
+        }
+        console.log("Current mode:", currentMode);
+    });
+
+    // 초기 로드 시 체크박스 상태에 따라 모드 설정 (기본은 큐레이터 모드 = unchecked)
+    // 이 로직은 이벤트 리스너와 중복되므로, 초기 설정을 함수로 분리하거나,
+    // DOMContentLoaded 시점에 modeToggleButton.checked 상태에 따라 한 번만 실행되도록 조정할 수 있습니다.
+    // 현재는 이벤트 리스너가 초기 상태를 반영하도록 되어 있으므로, 중복 코드를 제거합니다.
+    // 대신, 초기 로드 시 `change` 이벤트를 강제로 발생시켜 초기 상태를 설정할 수 있습니다.
+    // modeToggleButton.dispatchEvent(new Event('change')); // 초기 모드 설정을 위해 강제로 change 이벤트 발생
+
+    // Django CSRF 토큰을 쿠키에서 가져오는 헬퍼 함수
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + '=')) {
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
                 }
@@ -237,4 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return cookieValue;
     }
+
+    // 초기 대화 기록 로드 (선택 사항: 서버에서 기존 대화 불러오기)
+    // 이 부분은 `get_conversations_api`와 `get_conversation_history_api`를 사용하여 구현할 수 있습니다.
+    // 현재는 'new-chat'으로 시작하도록 설정되어 있습니다.
 });

@@ -1,0 +1,295 @@
+/* static/css/gallery.css */
+
+/* 기본 설정 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+/* 변수 설정 (archive.css와 동일하게 설정 가능 또는 별도 정의) */
+:root {
+    --primary-color: #5C7B8E;
+    --secondary-color: #6c757d;
+    --accent-color: #28a745;
+    --text-color: #343a40;
+    --text-color-light: #6a737d;
+    --border-color: #d0d0d0;
+    --input-bg-color: #ffffff;
+    --input-border-color: #ced4da;
+    --button-bg-color: #5C7B8E;
+    --button-text-color: #ffffff;
+    --hover-color: #4A6A7A;
+    --focus-shadow: rgba(0, 123, 255, 0.25);
+    --heading-color: #212529;
+    --placeholder-color: #adb5bd;
+    --background-color: #C9CFBD; /* style.css의 배경색과 컬러 동일 */
+    --card-bg-color: #ffffff; /* 카드 배경 */
+    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05); /* 가벼운 그림자 */
+}
+
+/* 섹션 공통 스타일 */
+.gallery-hero, .gallery-content-area {
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.gallery-hero {
+    background-color: #e9ecef; /* 약간 어두운 배경 */
+    border-bottom: 1px solid var(--border-color);
+    padding: 80px 20px;
+}
+
+.gallery-hero h1 {
+    font-size: 3.2em;
+    color: var(--heading-color);
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.gallery-hero p {
+    font-size: 1.1em;
+    color: var(--text-color-light);
+    max-width: 800px;
+    margin: 0 auto 15px;
+}
+
+.gallery-content-area {
+    padding-top: 40px;
+}
+
+.gallery-controls-wrapper {
+    background-color: var(--card-bg-color);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-light);
+    margin-bottom: 50px;
+    text-align: left; /* 필터 영역은 왼쪽 정렬 */
+}
+
+.search-filter-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.search-box input[type="text"] {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: var(--input-bg-color);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-box input[type="text"]::placeholder {
+    color: var(--placeholder-color);
+}
+
+.search-box input[type="text"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem var(--focus-shadow);
+    outline: none;
+}
+
+.search-box button, .reset-filters {
+    padding: 12px 25px;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.search-box button:hover, .reset-filters:hover {
+    background-color: var(--hover-color);
+    transform: translateY(-2px);
+}
+
+.filter-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap; /* 작은 화면에서 줄바꿈 */
+    justify-content: flex-start; /* 왼쪽 정렬 */
+}
+
+.filter-options select {
+    padding: 10px 15px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+    font-size: 1em;
+    min-width: 150px; /* 최소 너비 지정 */
+}
+
+.gallery-results-title {
+    font-size: 2.5em;
+    color: var(--heading-color);
+    margin-bottom: 40px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* 박물관/전시관 목록 컨테이너 */
+.museum-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 20px 0;
+    justify-content: center;
+}
+
+/* 각 박물관/전시관 카드 스타일 */
+.museum-card {
+    background-color: var(--card-bg-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-light);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+.museum-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.museum-card img {
+    width: 100%;
+    height: 200px; /* 이미지 높이 고정 */
+    object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
+    border-bottom: 1px solid #eee;
+}
+
+.museum-card-info {
+    padding: 20px;
+    flex-grow: 1; /* 콘텐츠가 넘치면 확장되도록 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.museum-card-info h3 {
+    font-size: 1.5em;
+    color: var(--heading-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.museum-card-info p {
+    font-size: 0.95em;
+    color: var(--text-color-light);
+    margin-bottom: 8px;
+}
+
+.museum-card-info .address {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.museum-card-info .contact-link a,
+.museum-card-info .website-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.museum-card-info .contact-link a:hover,
+.museum-card-info .website-link a:hover {
+    color: var(--hover-color);
+    text-decoration: underline;
+}
+
+.museum-card-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: flex-end; /* 버튼 오른쪽 정렬 */
+}
+
+.museum-card-buttons a {
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-detail {
+    background-color: var(--accent-color);
+    color: #ffffff;
+}
+
+.btn-detail:hover {
+    background-color: #218838;
+}
+
+/* 응답형 디자인 (모바일 최적화) */
+@media (max-width: 768px) {
+    .gallery-hero h1 {
+        font-size: 2.5em;
+    }
+    .gallery-hero p {
+        font-size: 1em;
+    }
+    .gallery-controls-wrapper {
+        padding: 20px;
+    }
+    .search-box {
+        flex-direction: column;
+    }
+    .search-box button {
+        margin-top: 10px;
+    }
+    .filter-options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-options select, .reset-filters {
+        width: 100%;
+    }
+    .museum-list-container {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-hero {
+        padding: 40px 15px;
+    }
+    .gallery-hero h1 {
+        font-size: 2em;
+    }
+    .gallery-hero p {
+        font-size: 0.9em;
+    }
+    .gallery-controls-wrapper {
+        padding: 15px;
+        margin-bottom: 30px;
+    }
+    .museum-list-container {
+        grid-template-columns: repeat(1, 1fr);
+        max-width: 320px;
+        margin: 0 auto;
+    }
+}

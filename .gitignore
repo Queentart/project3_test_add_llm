@@ -1,0 +1,26 @@
+# 1. 민감한 정보 (Sensitive Information)
+db.sqlite3          # SQLite 데이터베이스 파일 (개발용)
+.env                # 환경 변수 파일 (API 키, DB 비밀번호 등 민감 정보 포함 가능)
+
+# 2. 자동으로 생성되는 파일 및 디렉토리 (Generated Files/Directories)
+__pycache__/        # Python 컴파일된 바이트코드 캐시 디렉토리
+*.pyc               # Python 컴파일된 바이트코드 파일
+media/              # 사용자 업로드 미디어 파일 (Django UPLOAD_TO 경로)
+staticfiles/        # collectstatic 명령어로 생성되는 배포용 정적 파일 디렉토리
+
+# 3. 운영체제 및 IDE 관련 파일 (OS/IDE Specific Files)
+.DS_Store           # macOS에서 생성되는 디렉토리 정보 파일
+Thumbs.db           # Windows에서 생성되는 썸네일 캐시 파일
+.vscode/            # VS Code IDE 설정 파일
+.idea/              # PyCharm 등 IntelliJ 계열 IDE 설정 파일
+*.iml               # IntelliJ 계열 IDE 모듈 파일
+
+# 4. 로그 파일 (Log Files)
+*.log               # 애플리케이션 실행 중 생성되는 모든 로그 파일
+
+# 5. 가상 환경 디렉토리 (Virtual Environment Directory)
+# 아나콘다를 사용하는 경우, 가상 환경 디렉토리는 보통 프로젝트 내부에 생성되지 않으므로
+# 여기에 별도로 추가할 필요는 없습니다.
+# venv/
+# .venv/
+# env/

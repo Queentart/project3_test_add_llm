@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}환영합니다!{% endblock %}
+
+{% block head_extra %}
+    {# welcome.css는 여전히 여기서 링크합니다. #}
+    <link rel="stylesheet" href="{% static 'css/welcome.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class="welcome-section">
+        <div class="welcome-text animate__animated animate__fadeInLeft"> {# 왼쪽에서 나타나는 애니메이션 #}
+            <h1 class="animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">Welcome to AI Chatbot & Image Generation</h1>
+            <p class="animate__animated animate__fadeInUp" style="animation-delay: 0.7s;">AI 기술이 예술과 소통의 새로운 지평을 엽니다.</p>
+            <p class="animate__animated animate__fadeInUp" style="animation-delay: 0.9s;">궁금한 것을 물어보거나, 자신만의 이미지를<br> 만들어보세요.</p>
+            <a href="{% url 'main_page' %}" class="btn-start animate__animated animate__fadeInUp" style="animation-delay: 1.1s;">시작하기</a>
+        </div>
+        <div class="welcome-images">
+            <div class="large-image animate__animated animate__fadeInRight" style="animation-delay: 0.2s;"> {# 오른쪽에서 나타나는 애니메이션 #}
+                <img src="{% static 'images/1.png' %}" alt="큰 이미지">
+            </div>
+            <div class="small-image animate__animated animate__fadeInRight" style="animation-delay: 0.4s;"> {# 오른쪽에서 나타나는 애니메이션 (더 늦게) #}
+                <img src="{% static 'images/2.png' %}" alt="작은 이미지">
+            </div>
+        </div>
+    </section>
+{% endblock %}

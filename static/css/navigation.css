@@ -1,0 +1,103 @@
+/* navigation.css */
+
+/* project3_django_no_celery/static/css/navigation.css */
+
+/* --- 추가: 전역 바디 레이아웃 설정 (모든 페이지에 적용될 기본 레이아웃) --- */
+ body {
+    font-family: Arial, sans-serif; /* welcome.css와 일관된 폰트 */
+    line-height: 1.6;
+    background-color: #f4f4f4; /* welcome.css와 일관성 유지 */
+    color: #333; /* welcome.css와 일관성 유지 */
+
+    display: flex; /* Flexbox 레이아웃 활성화 */
+    flex-direction: column; /* 자식 요소들을 세로로 정렬 */
+    min-height: 100vh; /* 뷰포트의 최소 높이를 100%로 설정 (스크롤 없어도 푸터 고정) */
+    margin: 0; /* 기본 마진 제거 */
+    padding: 0; /* 기본 패딩 제거 */
+    box-sizing: border-box; /* 패딩과 보더가 너비/높이에 포함되도록 */
+ }
+
+/* --- 추가: main-content 클래스가 뷰포트의 남은 공간을 차지하도록 --- */
+ .main-content {
+    flex-grow: 1; /* 남은 공간을 모두 차지하여 푸터를 하단으로 밀어냄 */
+    /* 필요에 따라 여기 패딩을 추가할 수 있습니다. */
+ }
+
+/* --- 기존 navigation.css 내용 --- */
+.header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    flex-shrink: 0; /* 헤더는 줄어들지 않도록 추가 */
+}
+
+.header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.header .main-title {
+    margin: 0;
+    font-size: 24px;
+}
+
+.header .main-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex; /* 메뉴 아이템을 가로로 정렬 */
+}
+
+.header .main-nav li {
+    margin-left: 20px; /* 메뉴 아이템 사이의 간격 */
+}
+
+.header .main-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 5px 0; /* 클릭 영역 확보 */
+    transition: color 0.3s ease; /* 호버 효과 */
+}
+
+.header .main-nav a:hover {
+    color: #ffd700; /* 호버 시 색상 변경 */
+    text-decoration: underline;
+}
+
+/* --- 추가: 푸터 스타일을 welcome.css에서 이리로 옮김 (중복 제거) --- */
+ .footer {
+    background-color: #333;
+    color: #fff;
+    padding: 15px 0;
+    text-align: center;
+    flex-shrink: 0; /* 푸터는 줄어들지 않도록 */
+ }
+
+ .footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px; /* 좌우 패딩 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+ }
+
+ .footer p {
+    margin: 0;
+ }
+
+ .footer .social-links a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 15px;
+    transition: color 0.3s ease;
+ }
+
+ .footer .social-links a:hover {
+    color: #ffd700;
+ }

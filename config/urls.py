@@ -1,26 +1,22 @@
-# D:\project3_django_no_celery\config\urls.py
-
+# config/urls.py
 from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import TemplateView # 이 줄을 추가합니다.
+from django.urls import path, include # `include` 함수를 사용하려면 이 부분을 임포트해야 합니다.
 from django.conf import settings
-from django.conf.urls.static import static
-
-# image_generator.views에서 index_view는 더 이상 임포트하지 않습니다.
-from image_generator.views import generate_image_view, check_image_status_view
+from django.conf.urls.static import static # static/media 파일 서빙을 위해 필요합니다.
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    # 루트 URL ("/") 요청이 templates/index.html 파일을 렌더링하도록 변경
-    # name='home'은 선택 사항이지만, 템플릿에서 URL을 참조할 때 유용합니다.
-    path("", TemplateView.as_view(template_name='index.html'), name='home'),
+    path("admin/", admin.site.urls), # Django 관리자 페이지
 
-    # API 엔드포인트는 그대로 유지
-    path("api/generate-image/", generate_image_view, name="generate_image"),
-    path("api/task-status/<uuid:task_id>/", check_image_status_view, name="check_image_status"),
+    # 'image_generator' 앱의 모든 URL을 루트 경로에 포함합니다.
+    # 이렇게 하면 'image_generator/urls.py'에 정의된
+    # 모든 path (예: '', 'features/', 'main/', 'api/process_request/' 등)가
+    # 자동으로 이 프로젝트의 루트 URL에서부터 시작하여 매핑됩니다.
+    path('', include('image_generator.urls')),
+
+    # 개발 환경에서만 정적(STATIC_URL) 및 미디어(MEDIA_URL) 파일 서빙을 처리합니다.
+    # 이 설정은 프로젝트의 루트 urls.py에 있어야 합니다.
 ]
 
-# 개발 서버에서 미디어 파일 서빙을 위한 설정 추가
-# DEBUG=True 일 때만 작동합니다. 배포 시에는 웹 서버(Nginx/Apache)가 처리해야 합니다.
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) # 정적 파일 서빙도 추가

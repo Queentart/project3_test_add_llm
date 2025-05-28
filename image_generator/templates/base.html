@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Django App{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {# Animate.css CDN 링크 추가 #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    {% block head_extra %}{% endblock %} {# 이 블록은 그대로 유지합니다 #}
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="{% url 'welcome_page' %}" class="nav-brand">AI Atelier: Painting Your Stories</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'welcome_page' %}">환영</a></li>
+                <li><a href="{% url 'about_page' %}">소개</a></li>
+                <li><a href="{% url 'features_page' %}">기능</a></li>
+                <li><a href="{% url 'archive_page' %}">아카이브</a></li>
+                <li><a href="{% url 'main_page' %}">메인</a></li>
+                <li><a href="{% url 'gallery_page' %}">전시관 찾기</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 My Django App. All rights reserved.</p>
+    </footer>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -37,7 +37,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     # CORS 미들웨어는 CommonMiddleware 위에 위치해야 합니다.
-    "corsheaders.middleware.CorsMiddleware",
+    'corsheaders.middleware.CorsMiddleware', # CORS 미들웨어 추가
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -50,11 +50,12 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')], # 프로젝트 루트의 'templates' 폴더를 추가
+        # templates 디렉토리의 위치를 명시적으로 지정
+        "DIRS": [os.path.join(BASE_DIR, 'templates')], # <--- 이 부분이 수정되었습니다.
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                'django.template.context_processors.debug',
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -99,60 +100,69 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "ko-kr"
+LANGUAGE_CODE = "ko-kr" # 한국어 설정
 
-TIME_ZONE = "Asia/Seoul"
+TIME_ZONE = "Asia/Seoul" # 한국 시간대 설정
 
 USE_I18N = True
 
 USE_TZ = True
 
-# --- Cache (Redis) Settings ---
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+
+STATIC_URL = "/static/"
+# 개발 환경에서 static 파일이 어디에 있는지 Django에게 알려줍니다.
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"), # <--- 이 부분이 수정되었습니다.
+]
+
+# Media files (User uploaded content)
+# 유저가 업로드하는 이미지 파일 등을 저장할 경로
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media", "comfyui_output") # <--- 이 부분이 수정되었습니다.
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# --- ComfyUI API Settings ---
+# ComfyUI가 실행 중인 주소로 변경하세요.
+# 기본값은 로컬호스트 8188 포트입니다.
+COMFYUI_API_URL = "http://127.0.0.1:8188/prompt"
+COMFYUI_HISTORY_URL = "http://127.0.0.1:8188/history"
+COMFYUI_IMAGE_URL = "http://127.0.0.1:8188/view"
+# ComfyUI의 'input' 폴더의 실제 경로를 지정합니다.
+# **이 경로는 ComfyUI가 설치된 디렉토리 내의 'input' 폴더여야 합니다.**
+# 예: "C:\\Users\\YourUser\\ComfyUI\\input" (Windows)
+# 예: "/home/youruser/ComfyUI/input" (Linux)
+# 개발 환경에 맞춰 정확히 수정해야 합니다.
+COMFYUI_INPUT_DIR = os.path.join(BASE_DIR, 'comfyui_data', 'input') # <--- 이 부분이 가장 중요합니다!
+
+# --- Ollama API Settings ---
+# Ollama가 실행 중인 주소와 사용할 모델을 설정합니다.
+# gemma_service.py에서 이 설정을 가져다 사용합니다.
+OLLAMA_API_URL = "http://localhost:11434/api/generate" # Ollama API 엔드포인트
+OLLAMA_MODEL_NAME = "gemma3:latest" # Ollama에 pull한 Gemma 모델 이름
+
+# --- Cache Settings (Django Cache Framework) ---
+# 이미지 생성 상태 및 대화 기록을 임시 저장하는 데 사용됩니다.
+# 개발 환경에서는 로컬 메모리 캐시를 사용합니다.
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1', # 캐시용 DB 번호 (Redis가 0부터 15까지 지원)
-        'TIMEOUT': 600, # 넉넉하게 10분 (초 단위)
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake', # 캐시 이름을 고유하게 지정
     }
 }
 
-
-# --- Static and Media Files Settings ---
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = "static/"
-
-# Django가 정적 파일을 찾을 디렉토리 목록.
-# 'templates'와 마찬가지로 프로젝트 루트에 있는 'static' 폴더를 명시적으로 추가합니다.
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# `python manage.py collectstatic` 명령 실행 시 정적 파일이 수집될 최종 디렉토리
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-
-MEDIA_URL = '/media/'
-# 사용자 업로드 파일(ComfyUI input 포함) 및 생성된 이미지(ComfyUI output)가 저장될 루트 디렉토리
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# ComfyUI 관련 경로 설정 (views.py에서 사용)
-COMFYUI_INPUT_DIR = os.path.join(MEDIA_ROOT, 'comfyui_input')
-# COMFYUI_OUTPUT_DIR = os.path.join(MEDIA_ROOT, 'comfyui_output') # 이 변수는 views.py에서 직접 사용되지 않으므로 제거하거나 주석 처리해도 무방합니다.
-
-# ComfyUI API URL 설정 (views.py에서 사용할 URL)
-COMFYUI_API_URL = 'http://127.0.0.1:8188/prompt'
-COMFYUI_HISTORY_URL = 'http://127.0.0.1:8188/history'
-COMFYUI_IMAGE_URL = 'http://127.0.0.1:8188/view'
-
-
-# 로깅 설정 (디버깅을 위해 DEBUG 레벨로 설정)
+# --- Logging Settings ---
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            # 여기서 settings.DEBUG 대신 그냥 DEBUG를 사용합니다.
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
@@ -163,10 +173,9 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            # 여기서 settings.DEBUG 대신 그냥 DEBUG를 사용합니다.
             'level': 'DEBUG' if DEBUG else 'INFO', # DEBUG 모드일 때 DEBUG 레벨, 아니면 INFO
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose' if DEBUG else 'simple', # 여기서도 DEBUG 사용
+            'formatter': 'verbose' if DEBUG else 'simple',
         },
     },
     'root': {
@@ -184,21 +193,22 @@ LOGGING = {
             'level': 'DEBUG', # 이 앱의 로그는 DEBUG 레벨로 출력
             'propagate': False,
         },
+        # Ollama 서비스의 로깅도 추가 (만약 별도 로거가 필요하다면)
+        'llm_cores': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        }
     }
 }
+
 # --- CORS (Cross-Origin Resource Sharing) Settings ---
-# 'corsheaders' 앱을 설치해야 합니다: pip install django-cors-headers
-# INSTALLED_APPS에 'corsheaders' 추가하고, MIDDLEWARE에 'corsheaders.middleware.CorsMiddleware' 추가
-# 프론트엔드가 Django와 같은 도메인에서 서비스되므로 CORS는 엄밀히 필요 없지만,
-# 개발 중이거나 추후 분리될 가능성을 대비하여 유지할 수 있습니다.
-# 운영 환경에서는 반드시 CORS_ALLOWED_ORIGINS를 사용하여 특정 도메인만 허용해야 합니다.
-CORS_ALLOW_ALL_ORIGINS = True 
+CORS_ALLOW_ALL_ORIGINS = True # 개발용: 모든 출처 허용. 운영 환경에서는 특정 도메인으로 제한해야 합니다.
+CORS_ALLOW_CREDENTIALS = True # 쿠키를 포함한 요청 허용 (CSRF 토큰 처리에 필요)
+
 # CORS_ALLOWED_ORIGINS = [
-#     "http://127.0.0.1:8000", # Django 개발 서버 주소
+#     "http://localhost:8000", # Django 개발 서버
+#     "http://127.0.0.1:8000",
+#     # 여기에 프론트엔드가 서비스되는 도메인을 추가하세요.
+#     # 예: "http://yourfrontend.com"
 # ]
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

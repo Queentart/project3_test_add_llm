@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI 도슨트 챗봇{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block content %}
+    <section class="main-page-intro animate__animated animate__fadeInUp">
+        <h1>AI 도슨트: 당신의 예술 가이드</h1>
+        <p>AI 도슨트와 대화하며 예술 작품에 대한 깊이 있는 해설을 듣고, 새로운 이미지를 창작해 보세요.</p>
+        <p>궁금한 작품에 대해 질문하거나, 상상하는 이미지를 프롬프트로 만들어 보세요.</p>
+    </section>
+
+    <div class="chatbot-container">
+        <div class="chat-header">
+            AI 도슨트 챗봇
+        </div>
+        <div class="chat-history" id="chat-history">
+            <div class="message-bubble ai">
+                <div class="message-content">안녕하세요! 무엇을 도와드릴까요?</div>
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="메시지를 입력하거나 이미지 속 작품 분석을 요청하세요...">
+            
+            <label for="image-upload-input" class="image-upload-button" title="이미지 업로드">
+                <i class="bi bi-image"></i>
+                <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+            </label>
+            
+            <div id="image-preview-area" class="image-upload-preview" style="display: none;">
+                <img id="uploaded-image-thumbnail" src="#" alt="미리보기">
+                <span id="uploaded-image-name"></span>
+                <span class="remove-image" id="remove-image-button">X</span>
+            </div>
+
+            {# [수정 사항] 새로운 체크박스 토글 버튼으로 변경 #}
+            <div class="checkbox-wrapper-56">
+                <label class="container">
+                    <input type="checkbox" id="mode-toggle-button"> {# id를 input에 부여 #}
+                    <div class="checkmark"></div>
+                </label>
+            </div>
+            {# [수정 사항] End #}
+
+            <button id="send-button"><i class="bi bi-send-fill"></i></button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/main.js' %}" defer></script>
+{% endblock %}

@@ -1,222 +1,229 @@
-/*
- * style.css
- * 이 파일은 AI 이미지 생성 웹 애플리케이션의 커스텀 CSS 스타일을 정의합니다.
- * Bootstrap CSS 파일 로드 후에 이 파일을 로드하여 기본 Bootstrap 스타일을 덮어쓰거나 확장합니다.
- */
+/* myapp/static/css/style.css */
 
-/* ==========================================================================
-   기본 및 공통 스타일
-   ========================================================================== */
+/* 전역 스타일 */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f2f5; /* 약간 회색조의 배경색 */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     color: #333;
+    background-color: #C9CFBD; /* 전체 배경색 설정 */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 헤더 */
+header {
+    background-color: #C9CFBD; /* 헤더 배경색 설정 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 내비게이션 바 */
+.navbar {
+    color: #333;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.nav-brand {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.nav-links li {
+    margin-left: 2rem;
+}
+
+.nav-links a {
+    color: #555;
+    padding: 0.5rem 0;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: #555;
+    bottom: -5px;
+    left: 0;
+    transition: width 0.3s ease-in-out;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* 메인 콘텐츠 영역 기본 스타일 */
+main {
+    padding: 2rem;
+    min-height: calc(100vh - 150px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 푸터 */
+footer {
+    background-color: #C9CFBD;
+    padding: 1.5rem;
+    text-align: center;
+    color: #555;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 웰컴 페이지 섹션 스타일 */
+.welcome-section {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 4rem 2rem;
+    /* 이전에 제거했으므로 다시 제거할 필요 없음 */
+}
+
+/* 웰컴 텍스트 영역 */
+.welcome-text {
+    flex: 1;
+    max-width: 50%;
+    text-align: left;
+    padding-right: 3rem;
+    color: #222; /* 텍스트 색상 좀 더 진하게 */
+}
+
+.welcome-text h1 {
+    font-size: 3.8rem;
+    color: #4a4a4a;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.welcome-text p {
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 2rem;
     line-height: 1.6;
 }
 
-.container {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    color: #007bff; /* 제목 색상 */
-    margin-bottom: 1.5rem;
-}
-
-/* ==========================================================================
-   폼 요소 스타일
-   ========================================================================== */
-.form-label {
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 0.5rem;
-}
-
-.form-control {
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-    padding: 0.75rem 1rem;
-}
-
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-}
-
-textarea.form-control {
-    resize: vertical; /* 수직 방향으로만 크기 조절 가능 */
-    min-height: 100px; /* 최소 높이 설정 */
-}
-
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    font-weight: bold;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-/* ==========================================================================
-   로딩 스피너 및 상태 메시지 스타일
-   ========================================================================== */
-#loadingSpinner {
-    display: none; /* 초기에는 숨김 */
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top: 4px solid #3498db; /* 스피너의 움직이는 부분 색상 */
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite; /* 1초 동안 선형적으로 무한 회전 */
-    margin: 20px auto; /* 위아래 20px 마진, 좌우 자동 마진으로 중앙 정렬 */
-}
-
-/* 스피너 회전 애니메이션 키프레임 */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-#statusMessage {
-    margin-top: 20px;
-    font-weight: bold;
-    text-align: center; /* 중앙 정렬 */
-    color: #333;
-}
-
-/* ==========================================================================
-   이미지 미리보기 (드래그 앤 드롭 영역) 스타일
-   ========================================================================== */
-#dropArea {
-    border: 2px dashed #007bff; /* 파란색 점선 테두리 */
-    border-radius: 5px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    background-color: #f8f9fa; /* 밝은 회색 배경 */
-    transition: background-color .3s ease, border-color .3s ease; /* 부드러운 전환 효과 */
-    
-    /* Flexbox를 사용하여 내부 아이템을 중앙 정렬 */
-    display: flex;
-    flex-direction: column; /* 세로 방향으로 정렬 (텍스트 위, 이미지 아래) */
-    align-items: center; /* 가로(교차 축) 중앙 정렬 */
-    justify-content: center; /* 세로(메인 축) 중앙 정렬 (내용이 많지 않을 때) */
-    min-height: 150px; /* 드롭 영역의 최소 높이 */
-}
-
-/* 드래그 중일 때의 스타일 */
-#dropArea.highlight {
-    background-color: #e2e6ea; /* 배경색 변경 */
-    border-color: #0056b3; /* 테두리색 변경 */
-}
-
-#dropArea p {
-    margin: 0; /* 기본 마진 제거 */
-    color: #6c757d; /* 회색 텍스트 */
-    word-break: keep-all; /* 단어 단위로 줄바꿈 (긴 텍스트일 경우) */
-}
-
-/* 실제 파일 입력 필드는 시각적으로 숨김 */
-#dropArea input[type="file"] {
-    display: none;
-}
-
-/* 업로드 아이콘 스타일 */
-#uploadIcon {
-    font-size: 3rem; /* 아이콘 크기 */
-    color: #007bff; /* 아이콘 색상 */
-    margin-bottom: 10px; /* 텍스트와의 간격 */
-    display: block; /* 초기에는 보이도록 설정 (JS에서 숨김) */
-}
-
-/* 새로 추가된 이미지 미리보기 래퍼 */
-#imagePreviewWrapper {
-    position: relative; /* 자식 요소의 absolute 포지셔닝 기준 */
-    display: none; /* 초기에는 숨김, JS에서 파일 선택 시 'block'으로 변경 */
-    margin-top: 10px; /* 드롭 영역 텍스트와의 여백 */
-    max-width: 100%; /* 부모 컨테이너 너비 제한 */
-}
-
-/* 선택된 이미지 미리보기 스타일 */
-#selectedImagePreview {
-    max-width: 100%;
-    max-height: 150px; /* 미리보기 이미지의 최대 높이 */
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    object-fit: contain; /* 이미지 비율 유지하며 컨테이너에 맞춤 */
-}
-
-/* X 버튼 스타일 */
-#clearImageButton {
-    position: absolute; /* 래퍼에 대해 상대적으로 위치 지정 */
-    top: 5px;
-    right: 5px;
-    z-index: 10; /* 다른 요소 위에 표시되도록 */
-    /* Bootstrap btn-close 기본 스타일을 따름 */
-    background-color: rgba(255, 255, 255, 0.8); /* 배경색을 약간 투명하게 */
-    border-radius: 50%; /* 원형으로 */
-    width: 24px; /* 크기 조정 */
-    height: 24px;
-    display: flex; /* 내부 X를 중앙에 정렬 */
-    align-items: center;
-    justify-content: center;
-    padding: 0; /* 패딩 제거 */
-    opacity: 0.8; /* 약간 투명하게 */
-    transition: opacity 0.2s ease;
-}
-
-#clearImageButton:hover {
-    opacity: 1; /* 호버 시 불투명하게 */
-}
-
-/* ==========================================================================
-   이미지 결과 및 다운로드 버튼 스타일
-   ========================================================================== */
-#imageResultContainer {
-    display: none; /* 초기에는 이미지 결과 컨테이너 전체를 숨김 (JS로 보이게 함) */
-    margin-top: 30px;
-    text-align: center; /* 내부 블록 요소(img)의 중앙 정렬을 위해 텍스트 정렬 사용 */
-}
-
-#imageResults {
-    text-align: center; /* 내부 이미지들을 중앙 정렬 */
-    margin-bottom: 20px;
-}
-
-#imageResults img {
-    max-width: 100%; /* 부모 컨테이너 너비를 넘지 않도록 */
-    height: auto; /* 비율 유지 */
-    border: 1px solid #ddd; /* 테두리 */
-    border-radius: 5px; /* 둥근 모서리 */
-    margin-bottom: 15px; /* 이미지 아래 여백 */
-    
-    /* 이미지를 블록 요소로 만들고 좌우 마진 auto로 중앙 정렬 */
-    display: block; 
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#downloadButton {
-    background-color: #28a745; /* 성공(Success)을 나타내는 초록색 */
+.btn-start {
+    display: inline-block;
+    background-color: #7A9E9F;
     color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    text-decoration: none; /* 링크처럼 보일 수 있도록 */
-    display: none; /* 초기에는 숨김 (JS로 보이게 함) */
-    margin-top: 10px; /* 이미지와의 간격 */
-    transition: background-color .3s ease; /* 부드러운 호버 효과 */
+    padding: 1rem 2.5rem;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#downloadButton:hover {
-    background-color: #218838; /* 호버 시 더 어두운 초록색 */
+.btn-start:hover {
+    background-color: #5D8788;
+    transform: translateY(-2px);
+}
+
+/* 웰컴 이미지 영역 */
+.welcome-images {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 2rem;
+    max-width: 50%;
+}
+
+/* 여기를 수정합니다: 이미지 주변의 하얀 박스 스타일 제거 */
+.large-image, .small-image {
+    /* 기존 스타일 제거 또는 주석 처리 */
+    /* background-color: #fff; */
+    /* padding: 10px; */
+    /* border-radius: 10px; */
+    /* box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15); */
+    margin-bottom: 2rem; /* 이미지 간 간격은 유지 */
+    line-height: 0;
+}
+
+.large-image img, .small-image img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    /* 이미지 자체의 둥근 모서리도 제거하거나 원하는 대로 조절 */
+    /* border-radius: 5px; */
+}
+
+.large-image {
+    width: 80%;
+}
+
+.small-image {
+    width: 60%;
+    margin-top: -50px;
+    margin-left: 50%;
+    z-index: 1;
+}
+
+/* 그 외 페이지별 섹션의 기본적인 여백 (필요 시 추후 조정) */
+.about-section,
+.features-section,
+.main-chatbot-section,
+.exhibition-finder-section {
+    padding: 2rem 0;
+}
+
+/* 반응형 디자인 (선택 사항: 화면이 작아질 때 대비) */
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        padding: 2rem 1rem;
+    }
+
+    .welcome-text, .welcome-images {
+        max-width: 100%;
+        padding: 0;
+        text-align: center;
+    }
+
+    .welcome-text {
+        margin-bottom: 2rem;
+    }
+
+    .large-image, .small-image {
+        width: 100%;
+        margin: 1rem auto;
+    }
+    
+    .small-image {
+        margin-top: 1rem;
+        margin-left: 0;
+    }
+
+    .welcome-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .welcome-text p {
+        font-size: 1.1rem;
+    }
 }

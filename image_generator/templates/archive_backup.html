@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}이미지 아카이브 - AI Chatbot & Image Generation{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{% static 'css/archive.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block content %}
+    <section class="archive-hero animate__animated animate__fadeInUp">
+        <h1>AI 이미지 생성 아카이브</h1>
+        <p>저희 AI는 **현존하는 거의 모든 시각 예술 스타일**을 넘나들며, 당신의 상상력을 현실로 만듭니다.</p>
+        <p>텍스트 프롬프트와 이미지-투-이미지(i2i) 기능을 통해 창조된 무한한 가능성을 지금 바로 탐험해 보세요.</p>
+    </section>
+
+    <section class="archive-content-area">
+        <div class="archive-controls-wrapper animate__animated animate__fadeInDown">
+            <div class="search-filter-area">
+                <div class="search-box">
+                    <input type="text" placeholder="검색어를 입력하세요 (예: 고양이, 미래도시)">
+                    <button type="button"><i class="bi bi-search"></i> 검색</button>
+                </div>
+                <div class="filter-options">
+                    <select>
+                        <option value="">스타일 선택</option> {# 콤보박스 초기 텍스트 변경 #}
+                        <option value="cyberpunk">사이버펑크</option>
+                        <option value="fantasy">판타지</option>
+                        <option value="surreal">초현실주의</option>
+                        <option value="classic">고전 유화</option>
+                        <option value="cartoon">카툰/애니메이션</option>
+                        <option value="abstract">추상화</option>
+                        <option value="oriental">동양화</option> {# 동양화 추가 #}
+                        <option value="watercolor">수채화</option>
+                        <option value="photorealistic">실사</option>
+                        <option value="photorealistic">픽셀 아트</option>
+                        <option value="photorealistic">3D 랜더링</option>
+                        {# 여기에 더 많은 대표 스타일들을 추가할 수 있습니다. #}
+                    </select>
+                    <select>
+                        <option value="">정렬 기준</option>
+                        <option value="latest">최신순</option>
+                        <option value="popular">인기순</option>
+                        <option value="random">랜덤</option>
+                    </select>
+                    <button type="button" class="reset-filters">초기화</button>
+                </div>
+            </div>
+        </div>
+
+        {# 갤러리 섹션의 제목과 설명은 그대로 유지합니다. #}
+        <h1 class="archive-gallery-title animate__animated animate__fadeInUp">AI 이미지 생성 갤러리</h1>
+        <p class="archive-gallery-description animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">다양한 프롬프트와 기능으로 탄생한 작품들을 탐험해 보세요. <br>아래는 AI가 구현 가능한 **주요 스타일 예시**입니다.</p>
+
+        {# 새로운 스타일 안내 섹션 추가 (갤러리 설명 아래) #}
+        <div class="style-guide-chips animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+            <span><i class="bi bi-tag-fill"></i> 사이버펑크</span>
+            <span><i class="bi bi-tag-fill"></i> 판타지</span>
+            <span><i class="bi bi-tag-fill"></i> 초현실주의</span>
+            <span><i class="bi bi-tag-fill"></i> 고전 유화</span>
+            <span><i class="bi bi-tag-fill"></i> 카툰/.애니메이션</span>
+            <span><i class="bi bi-tag-fill"></i> 추상화</span>
+            <span><i class="bi bi-tag-fill"></i> 동양화</span>
+            <span><i class="bi bi-tag-fill"></i> 수채화</span>
+            <span><i class="bi bi-tag-fill"></i> 실사</span>
+            <span><i class="bi bi-tag-fill"></i> 픽셀 아트</span>
+            <span><i class="bi bi-tag-fill"></i> 3D 렌더링</span>
+            {# 더 많은 스타일 태그들을 추가할 수 있습니다. #}
+        </div>
+
+
+        <div class="gallery-container">
+            {# 기존 gallery-card 들은 그대로 유지 #}
+            <div class="gallery-card animate__animated animate__zoomIn" style="animation-delay: 0.2s;">
+                <img src="{% static 'images/gallery_sample_01.jpg' %}" alt="미래 도시의 고양이">
+                <div class="card-content">
+                    <h3>미래 도시의 탐험가</h3>
+                    <p class="description">네온 빛이 가득한 도시를 탐험하는 고양이의 모습. 사이버펑크 스타일.</p>
+                    <div class="overlay">
+                        <p class="prompt">프롬프트: Cyberpunk cat exploring a futuristic city, neon glow</p>
+                        <p class="style">스타일: 사이버펑크, 네온</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-card animate__animated animate__zoomIn" style="animation-delay: 0.3s;">
+                <img src="{% static 'images/gallery_sample_02.jpg' %}" alt="판타지 숲 속 요정">
+                <div class="card-content">
+                    <h3>신비로운 숲의 요정</h3>
+                    <p class="description">빛나는 버섯과 함께 춤추는 요정. 동화 같은 분위기.</p>
+                    <div class="overlay">
+                        <p class="prompt">프롬프트: Enchanted fairy in a magical forest, glowing mushrooms</p>
+                        <p class="style">스타일: 판타지, 동화</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-card animate__animated animate__zoomIn" style="animation-delay: 0.4s;">
+                <img src="{% static 'images/gallery_sample_03.jpg' %}" alt="초현실적인 우주">
+                <div class="card-content">
+                    <h3>몽환적인 우주의 신전</h3>
+                    <p class="description">초현실적인 행성들과 고대 신전이 어우러진 풍경.</p>
+                    <div class="overlay">
+                        <p class="prompt">프롬프트: Surreal space temple, cosmic background, dreamlike</p>
+                        <p class="style">스타일: 초현실주의, 우주</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-card animate__animated animate__zoomIn" style="animation-delay: 0.5s;">
+                <img src="{% static 'images/gallery_sample_04.jpg' %}" alt="고전 미술 풍경">
+                <div class="card-content">
+                    <h3>고요한 시골 풍경</h3>
+                    <p class="description">클래식한 유화 스타일의 평화로운 시골 풍경.</p>
+                    <div class="overlay">
+                        <p class="prompt">프롬프트: Serene countryside landscape, classical oil painting</p>
+                        <p class="style">스타일: 고전 유화</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-card animate__animated animate__zoomIn" style="animation-delay: 0.6s;">
+                <img src="{% static 'images/gallery_sample_05.jpg' %}" alt="만화풍 캐릭터">
+                <div class="card-content">
+                    <h3>활기찬 만화 캐릭터</h3>
+                    <p class="description">밝고 경쾌한 색감의 만화풍 캐릭터 디자인.</p>
+                    <div class="overlay">
+                        <p class="prompt">프롬프트: Cheerful cartoon character, vibrant colors, comic book style</p>
+                        <p class="style">스타일: 카툰, 팝아트</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-card animate__animated animate__zoomIn" style="animation-delay: 0.7s;">
+                <img src="{% static 'images/gallery_sample_06.jpg' %}" alt="추상적인 예술">
+                <div class="card-content">
+                    <h3>빛의 추상적인 춤</h3>
+                    <p class="description"> </p>
+                    <div class="overlay">
+                        <p class="prompt">프롬프트: Abstract light dance, flowing colors, digital painting</p>
+                        <p class="style">스타일: 추상화, 디지털 페인팅</p>
+                    </div>
+                </div>
+            </div>
+            {# 필요하다면 여기에 더 많은 이미지 카드들을 추가하세요 #}
+        </div>
+        </section>
+
+{% endblock %}

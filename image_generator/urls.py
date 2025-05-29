@@ -19,7 +19,7 @@ urlpatterns = [
     path('api/process_request/', views.process_request_api, name='process_request_api'),
     path('api/task-status/<uuid:task_id>/', views.check_task_status_api, name='check_task_status'),
     path('api/conversations/', views.get_conversations_api, name='api_conversations'),
-    path('api/conversations/<uuid:conversation_id>/messages/', views.get_conversation_messages_api, name='api_conversation_messages'),
+    path('api/conversations/<uuid:conversation_id>/messages/', views.get_conversation_history_api, name='api_conversation_messages'),
 ]
 
 # 개발 서버에서 MEDIA_ROOT의 파일을 서빙하기 위한 설정 (배포 시에는 웹 서버가 처리)

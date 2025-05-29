@@ -121,12 +121,8 @@ STATICFILES_DIRS = [
 # Media files (User uploaded content)
 # 유저가 업로드하는 이미지 파일 등을 저장할 경로
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media", "comfyui_output") # <--- 이 부분이 수정되었습니다.
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# [수정 부분] MEDIA_ROOT는 프로젝트의 media 폴더를 가리키도록 변경 (ComfyUI output과 분리)
+MEDIA_ROOT = os.path.join(BASE_DIR, "media") 
 
 # --- ComfyUI API Settings ---
 # ComfyUI가 실행 중인 주소로 변경하세요.
@@ -134,12 +130,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 COMFYUI_API_URL = "http://127.0.0.1:8188/prompt"
 COMFYUI_HISTORY_URL = "http://127.0.0.1:8188/history"
 COMFYUI_IMAGE_URL = "http://127.0.0.1:8188/view"
-# ComfyUI의 'input' 폴더의 실제 경로를 지정합니다.
-# **이 경로는 ComfyUI가 설치된 디렉토리 내의 'input' 폴더여야 합니다.**
-# 예: "C:\\Users\\YourUser\\ComfyUI\\input" (Windows)
-# 예: "/home/youruser/ComfyUI/input" (Linux)
-# 개발 환경에 맞춰 정확히 수정해야 합니다.
-COMFYUI_INPUT_DIR = os.path.join(BASE_DIR, 'comfyui_data', 'input') # <--- 이 부분이 가장 중요합니다!
+
+# [수정 부분] ComfyUI의 'input' 폴더의 실제 경로를 지정합니다.
+# 이 경로는 ComfyUI가 설치된 디렉토리 내의 'input' 폴더여야 합니다.
+# 사용자님이 지정하신 경로에 맞게 수정했습니다.
+COMFYUI_INPUT_DIR = os.path.join(BASE_DIR, 'media', 'comfyui_input') # [수정됨]
+
+# [추가 부분] ComfyUI의 'output' 폴더의 실제 경로를 지정합니다.
+# 이 경로는 ComfyUI가 이미지를 생성하여 저장하는 'output' 폴더여야 합니다.
+# 이 값은 views.py의 generate_image_task에서 사용됩니다.
+COMFYUI_OUTPUT_DIR = os.path.join(BASE_DIR, 'media', 'comfyui_output') # [추가됨]
+
 
 # --- Ollama API Settings ---
 # Ollama가 실행 중인 주소와 사용할 모델을 설정합니다.

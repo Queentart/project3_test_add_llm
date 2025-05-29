@@ -24,28 +24,29 @@
                 <div class="message-content">안녕하세요! 무엇을 도와드릴까요?</div>
             </div>
         </div>
+
+        {# [수정 사항] 이미지 미리보기 영역을 채팅 입력창 위로 이동 #}
+        <div id="image-preview-area" class="image-upload-preview" style="display: none;">
+            <img id="uploaded-image-thumbnail" src="#" alt="미리보기">
+            <span id="uploaded-image-name"></span>
+            <span class="remove-image" id="remove-image-button">X</span>
+        </div>
+        {# [수정 사항] End #}
+
         <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="메시지를 입력하거나 이미지 속 작품 분석을 요청하세요...">
+            <input type="text" id="user-input" placeholder="메시지를 입력하거나 이미지 분석 프롬프트를 입력하세요...">
             
             <label for="image-upload-input" class="image-upload-button" title="이미지 업로드">
                 <i class="bi bi-image"></i>
                 <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
             </label>
             
-            <div id="image-preview-area" class="image-upload-preview" style="display: none;">
-                <img id="uploaded-image-thumbnail" src="#" alt="미리보기">
-                <span id="uploaded-image-name"></span>
-                <span class="remove-image" id="remove-image-button">X</span>
-            </div>
-
-            {# [수정 사항] 새로운 체크박스 토글 버튼으로 변경 #}
             <div class="checkbox-wrapper-56">
                 <label class="container">
-                    <input type="checkbox" id="mode-toggle-button"> {# id를 input에 부여 #}
+                    <input type="checkbox" id="mode-toggle-button">
                     <div class="checkmark"></div>
                 </label>
             </div>
-            {# [수정 사항] End #}
 
             <button id="send-button"><i class="bi bi-send-fill"></i></button>
         </div>

@@ -3,13 +3,20 @@
 from transformers import pipeline
 import os
 import torch
-# from concurrent.futures import ThreadPoolExecutor, as_completed # 병렬 다운로드를 위해 추가 (이제 사용 안 함)
+import logging
+from django.conf import settings # [추가 부분] settings 참조를 위해 임포트
+
+logger = logging.getLogger(__name__)
+
+# [추가 부분] 대상 언어 코드 정의
+# 이 서비스는 현재 영어(en)로만 번역하도록 설계되어 있습니다.
+TARGET_LANG_CODE = 'en'
 
 # 각 언어 쌍별 번역 모델 인스턴스를 저장할 딕셔너리
 _translators = {}
 
 # 지원하는 원본 언어 및 해당 언어에서 영어로의 모델 이름 매핑
-# 여기에 필요한 모든 언어를 추가하세요.
+# 이 딕셔너리는 '원본언어' -> 'Helsinki-NLP/opus-mt-원본언어-en' 형태로 구성되어 있습니다.
 LANGUAGE_MODELS = {
     "ko": "Helsinki-NLP/opus-mt-ko-en",
     "ja": "Helsinki-NLP/opus-mt-ja-en",
@@ -23,110 +30,105 @@ LANGUAGE_MODELS = {
     "th": "Helsinki-NLP/opus-mt-th-en", # 태국어
     "hi": "Helsinki-NLP/opus-mt-hi-en", # 힌디어
     "vi": "Helsinki-NLP/opus-mt-vi-en", # 베트남어
-    "pt": "Helsinki-NLP/opus-mt-ROMANCE-en", # 포르투갈어 (로망스어 통합 모델)
-    "el": "Helsinki-NLP/opus-mt-tc-big-el-en", # 그리스어
-    # 더 많은 언어가 필요하면 여기에 추가: "언어코드": "Helsinki-NLP/opus-mt-언어코드-en"
+    "el": "Helsinki-NLP/opus-mt-el-en", # 그리스어
+    "pt": "Helsinki-NLP/opus-mt-pt-en", # 포르투갈어
 }
-TARGET_LANG_CODE = "en" # 이 프로젝트의 대상 언어는 항상 영어입니다.
 
-# CPU/GPU 장치 설정 (전역으로 한 번만 결정)
-# 기본적으로 CPU를 사용하도록 강제 설정합니다. GPU 문제를 우회하기 위함입니다.
-_device = -1 # <--- CPU 사용을 강제!
-_device_name = 'cpu' # <--- 장치 이름도 'cpu'로 설정
-
-# 만약 GPU를 사용하고 싶고, 위의 문제가 해결되었다면 아래 코드로 변경:
-# _device = 0 if torch.cuda.is_available() else -1
-# _device_name = 'cuda:0' if _device == 0 else 'cpu'
-
-
-def get_translator_instance_for_lang(source_lang: str):
+# [추가 부분] 번역기 인스턴스를 가져오는 함수
+def get_translator_instance_for_lang(source_lang: str) -> pipeline:
     """
-    특정 원본 언어(source_lang)에서 영어로 번역하는 모델 인스턴스를 반환합니다.
-    모델은 첫 호출 시 다운로드 및 로드되며, GPU가 사용 가능한 경우 GPU를 활용합니다.
+    주어진 원본 언어에 해당하는 번역기 파이프라인 인스턴스를 로드하거나 가져옵니다.
+    이 함수는 항상 원본 언어에서 영어(en)로의 번역 모델을 로드합니다.
     """
-    if source_lang not in LANGUAGE_MODELS:
-        # 지원하지 않는 언어 요청 시 ValueError 발생
-        raise ValueError(f"Unsupported source language: '{source_lang}'. Supported languages are: {list(LANGUAGE_MODELS.keys())}")
+    # 모델 키는 '원본언어-대상언어' 형태로, 대상 언어는 항상 TARGET_LANG_CODE(en)로 고정
+    model_key = f"{source_lang}-{TARGET_LANG_CODE}"
+    
+    if model_key not in _translators:
+        model_name = LANGUAGE_MODELS.get(source_lang)
+        if not model_name:
+            # 지원하지 않는 원본 언어인 경우 ValueError 발생
+            raise ValueError(f"Unsupported source language: '{source_lang}'. No translation model found for this language.")
+        
+        # [주석 처리] cache_dir은 pipeline 생성 시 모델 캐싱 경로를 지정하는 용도이며,
+        # model.generate() 메서드에 전달되는 인자가 아닙니다.
+        # 이로 인해 "model_kwargs are not used by the model: ['cache_dir']" 오류가 발생했습니다.
+        # Hugging Face는 기본 캐시 경로를 사용하므로, 명시적으로 지정하지 않아도 됩니다.
+        # 만약 특정 캐시 경로가 필요하다면, 다른 방식으로 모델을 로드해야 할 수 있습니다.
+        # cache_dir = os.path.join(base_dir, 'translation_models_cache')
+        # os.makedirs(cache_dir, exist_ok=True)
 
-    # 이미 로드되었거나 로드 시도 중인 모델인 경우 캐시된 인스턴스 반환
-    # None은 로딩 실패를 의미
-    if source_lang not in _translators or _translators[source_lang] is None:
-        model_name = LANGUAGE_MODELS[source_lang]
         try:
-            print(f"Loading translation model '{model_name}' on device: {_device_name}")
-
-            _translators[source_lang] = pipeline(
-                "translation",
-                model=model_name,
-                device=_device
+            # device=0 if torch.cuda.is_available() else -1: GPU 사용 가능 시 GPU, 아니면 CPU
+            # [수정 부분] cache_dir 인자 제거
+            _translators[model_key] = pipeline(
+                "translation", 
+                model=model_name, 
+                device=0 if torch.cuda.is_available() else -1
             )
-            print(f"Translation model '{model_name}' loaded successfully.")
+            logger.info(f"Successfully loaded translation model: {model_name}")
         except Exception as e:
-            print(f"Error loading translation model '{model_name}': {e}")
-            print("Initial download requires internet. Check connectivity or disk space. If issue persists, consider updating PyTorch/Transformers or trying on CPU.")
-            _translators[source_lang] = None # 로딩 실패 시 None으로 유지하여 오류를 알림
-    return _translators[source_lang]
+            logger.error(f"Error loading translation model {model_name}: {e}", exc_info=True)
+            raise # 모델 로딩 실패 시 예외 다시 발생
 
+    return _translators[model_key]
+
+# [수정 부분] translate_text 함수
 def translate_text(text: str, source_lang: str, target_lang: str) -> str:
     """
     주어진 텍스트를 원본 언어(source_lang)에서 대상 언어(target_lang)로 번역합니다.
     이 함수는 LANGUAGE_MODELS에 정의된 언어 쌍만 지원하며, 대상 언어는 항상 'en'입니다.
     """
+    if not text:
+        return ""
+
     # 대상 언어가 영어가 아니면 오류 반환
     if target_lang != TARGET_LANG_CODE:
+        logger.warning(f"Unsupported target language code '{target_lang}'. This service can only translate TO English ('{TARGET_LANG_CODE}').")
         return f"Unsupported target language code '{target_lang}'. This service can only translate TO English ('{TARGET_LANG_CODE}')."
 
     try:
         # 요청된 언어에 대한 번역기 인스턴스 가져오기
         translator = get_translator_instance_for_lang(source_lang)
-        if translator is None:
-            # 모델 로딩에 실패하여 번역기 인스턴스가 None인 경우
-            return "Translation service is unavailable for this language. Model failed to load."
+        
+        # [주석 처리] get_translator_instance_for_lang에서 이미 예외를 발생시키므로 이 조건은 불필요할 수 있지만,
+        # 만약 함수가 None을 반환하는 경우를 대비한 안전 코드이므로, 이대로 유지해도 무방합니다.
+        # if translator is None: 
+        #     logger.error("Translation service is unavailable for this language. Model failed to load.")
+        #     return "Translation service is unavailable for this language. Model failed to load."
 
         # Hugging Face pipeline을 사용하여 번역 수행
-        # src_lang과 tgt_lang을 명시적으로 전달하여 정확한 언어 쌍 사용
-        translated_result = translator(text, src_lang=source_lang, tgt_lang=target_lang)
+        # [수정 부분] src_lang과 tgt_lang을 제거하고 텍스트만 전달
+        translated_result = translator(text)
         
         # 번역 결과는 보통 리스트의 첫 번째 요소에 'translation_text' 키로 존재
         return translated_result[0]['translation_text']
     except ValueError as ve: 
         # get_translator_instance_for_lang에서 발생한 지원하지 않는 언어 오류 처리
-        print(f"Translation error: {ve}")
+        logger.error(f"Translation error: {ve}", exc_info=True)
         return str(ve) # 사용자에게 오류 메시지를 반환
     except Exception as e:
         # 번역 과정 중 발생할 수 있는 다른 예외 처리
-        print(f"Error during translation process for '{source_lang}'->'{target_lang}': {e}")
+        logger.error(f"Error during translation process for '{source_lang}'->'{target_lang}': {e}", exc_info=True)
         return f"Translation failed due to an internal error: {e}"
 
-def download_all_models():
-    """
-    LANGUAGE_MODELS에 정의된 모든 번역 모델을 미리 다운로드합니다.
-    (순차적으로 다운로드하여 안정성을 높임)
-    """
-    print(f"Attempting to download all {len(LANGUAGE_MODELS)} translation models sequentially...")
-    
-    for lang_code in LANGUAGE_MODELS.keys():
-        try:
-            get_translator_instance_for_lang(lang_code)
-            print(f"Successfully downloaded/loaded model: {LANGUAGE_MODELS[lang_code]}")
-        except Exception as e:
-            print(f"Failed to download/load model {LANGUAGE_MODELS[lang_code]} for language '{lang_code}': {e}")
-                
-    print("All model download attempts completed.")
+# [주석 처리] requests 및 json 모듈은 이 스크립트에서 직접 사용되지 않으므로 주석 처리하거나 제거할 수 있습니다.
+# import requests
+# import json
 
-# 이 파일을 직접 실행하여 테스트할 때만 동작하는 코드
+# [주석 처리] 병렬 다운로드를 위한 import는 사용되지 않으므로 주석 처리합니다.
+# from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# 테스트 코드 (이 부분은 파일의 가장 아래에 위치해야 합니다)
 if __name__ == "__main__":
-    print("--- Testing translation_service.py ---")
-    
-    # 모든 모델 다운로드 및 로드 시도
-    # 이 과정은 네트워크 상태 및 시스템 성능에 따라 시간이 오래 걸릴 수 있습니다.
-    download_all_models()
-    print("\n--- Running Translation Tests ---")
+    # GPU 사용 가능 여부 확인
+    if torch.cuda.is_available():
+        print("CUDA is available! Using GPU for translation.")
+    else:
+        print("CUDA is not available. Using CPU for translation.")
 
-    # 각 언어별 테스트 프롬프트
     test_prompts = {
-        "ko": "고요한 호수 위에 떠 있는 달",
-        "ja": "こんにちは、元気ですか？", # 일본어: 안녕하세요, 잘 지내세요?
+        "ko": "안녕하세요, 세계! 오늘 날씨가 정말 좋네요.", # 한국어: 안녕, 세상! 오늘 날씨 정말 좋네요.
+        "ja": "こんにちは、世界！お元気ですか？", # 일본어: 안녕하세요, 잘 지내세요?
         "zh": "你好，世界，今天天气真好！", # 중국어: 안녕, 세상, 오늘 날씨 정말 좋다!
         "fr": "La vie est belle.", # 프랑스어: 인생은 아름다워.
         "de": "Ich liebe Programmierung.", # 독일어: 저는 프로그래밍을 사랑합니다.
@@ -137,24 +139,13 @@ if __name__ == "__main__":
         "th": "สวัสดีครับ", # 태국어: 안녕하세요 (남성형)
         "hi": "नमस्ते दुनिया", # 힌디어: 안녕하세요 세상
         "vi": "Xin chào thế giới", # 베트남어: 안녕하세요 세상
-        "el": "Γεια σου κόσμε!", # 그리스어: 안녕, 세상!
+        "el": "Γεια σου κόσ메!", # 그리스어: 안녕, 세상!
         "pt": "Olá, mundo!", # 포르투갈어: 안녕, 세상!
     }
 
     # 각 언어에 대해 번역 테스트 실행
     for lang_code, text in test_prompts.items():
         print(f"Original ({lang_code.upper()}): {text}")
-        print(f"Translated (EN): {translate_text(text, lang_code, 'en')}")
+        # [수정] source_lang과 target_lang을 명시적으로 전달
+        print(f"Translated (EN): {translate_text(text, source_lang=lang_code, target_lang='en')}")
         print("-" * 30)
-
-    # 잘못된 대상 언어 테스트 (이 모델들은 영어로만 번역 가능)
-    test_text_invalid_target = "Hello World"
-    print(f"Original (KO): {test_text_invalid_target}")
-    print(f"Translated (KO - Invalid Target): {translate_text(test_text_invalid_target, 'ko', 'ko')}")
-    print("-" * 30)
-
-    # 지원하지 않는 원본 언어 테스트
-    test_text_unsupported_source = "Habari dunia" # Swahili for "Hello world"
-    print(f"Original (SW): {test_text_unsupported_source}")
-    print(f"Translated (EN - Unsupported Source): {translate_text(test_text_unsupported_source, 'sw', 'en')}")
-    print("-" * 30)

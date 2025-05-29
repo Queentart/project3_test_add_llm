@@ -16,6 +16,30 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedImageFile = null; // 업로드할 이미지 파일
     let currentMode = 'curator'; // 현재 챗봇 모드: 'curator' (도슨트) 또는 'image_generation' (이미지 생성)
 
+    // [수정 사항] 초기 로드 시 모드 설정 및 UI 업데이트 함수
+    // 이미지 업로드 버튼은 항상 표시되도록 로직 변경
+    function updateModeUI(mode) {
+        currentMode = mode;
+        if (currentMode === 'image_generation') {
+            userInput.placeholder = '이미지 생성 프롬프트를 입력하세요 (예: 푸른 하늘을 나는 용)';
+            // document.querySelector('.image-upload-button').style.display = 'flex'; // [제거] 항상 표시
+            displayNotification("이미지 생성 모드가 활성화되었습니다.");
+        } else { // 'curator' 모드
+            userInput.placeholder = '메시지를 입력하거나 이미지 분석 프롬프트를 입력하세요...'; // [수정] 이미지 분석 안내 추가
+            // document.querySelector('.image-upload-button').style.display = 'none'; // [제거] 항상 표시
+            removeImageButton.click(); // 모드 변경 시 이미지 미리보기 초기화
+            displayNotification("AI 도슨트 모드가 활성화되었습니다.");
+        }
+        console.log("Current mode:", currentMode);
+        userInput.focus(); // 모드 변경 후 입력 필드에 포커스 설정
+    }
+
+    // 초기 로드 시 체크박스 상태에 따라 모드 설정
+    // 체크박스가 checked 상태이면 'image_generation' 모드, 아니면 'curator' 모드
+    // `modeToggleButton.checked`의 초기 상태를 반영하여 UI를 업데이트합니다.
+    updateModeUI(modeToggleButton.checked ? 'image_generation' : 'curator');
+
+
     // 2. 메시지 표시 함수
     function displayMessage(sender, text, imageUrl = null) {
         const messageBubble = document.createElement('div');
@@ -38,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chatHistory.scrollTop = chatHistory.scrollHeight; // 스크롤을 항상 최하단으로
     }
 
-    // [추가 사항] 알림 메시지 표시 함수
+    // 알림 메시지 표시 함수
     function displayNotification(message) {
         const notificationBubble = document.createElement('div');
         notificationBubble.classList.add('message-bubble', 'notification');
@@ -143,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
             displayMessage('ai', `오류 발생: ${error.message || '메시지를 전송할 수 없습니다.'}`);
         } finally {
             sendButton.disabled = false; // 전송 완료 후 버튼 활성화
+            userInput.focus(); // 메시지 전송 후 입력 필드에 포커스 설정
         }
     }
 
@@ -159,10 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     hideLoadingSpinner();
                     displayMessage('ai', data.message, data.image_url);
                     currentConversationId = data.conversation_id; // 대화 ID 업데이트
+                    userInput.focus(); // 작업 완료 후 입력 필드에 포커스 설정
                 } else if (data.status === 'FAILURE') {
                     clearInterval(pollInterval);
                     hideLoadingSpinner();
                     displayMessage('ai', `작업 실패: ${data.message}`);
+                    userInput.focus(); // 작업 실패 후 입력 필드에 포커스 설정
                 } else {
                     // PENDING 또는 PROGRESS 상태, 계속 폴링
                     // 필요하다면 진행률 업데이트 로직 추가 (예: 스피너 옆에 % 표시)
@@ -172,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideLoadingSpinner();
                 console.error('Error polling task status:', error);
                 displayMessage('ai', `작업 상태 확인 중 오류 발생: ${error.message}`);
+                userInput.focus(); // 오류 발생 후 입력 필드에 포커스 설정
             }
         }, 2000); // 2초마다 폴링
     }
@@ -209,29 +237,10 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadedImageName.textContent = '';
     });
 
-    // [수정 사항] 모드 토글 버튼 이벤트 리스너 (체크박스용)
+    // 모드 토글 버튼 이벤트 리스너 (체크박스용)
     modeToggleButton.addEventListener('change', function() { // click 대신 change 이벤트 사용
-        if (this.checked) { // 체크박스가 체크되면 이미지 생성 모드
-            currentMode = 'image_generation';
-            userInput.placeholder = '이미지 생성 프롬프트를 입력하세요 (예: 푸른 하늘을 나는 용)';
-            document.querySelector('.image-upload-button').style.display = 'flex';
-            displayNotification("이미지 생성 모드가 활성화되었습니다."); // [추가 사항] 알림 표시
-        } else { // 체크박스가 체크 해제되면 큐레이터 모드
-            currentMode = 'curator';
-            userInput.placeholder = '메시지를 입력하거나 이미지 생성 프롬프트를 입력하세요...';
-            document.querySelector('.image-upload-button').style.display = 'none';
-            removeImageButton.click(); // 이미지 미리보기 초기화 함수 호출
-            displayNotification("AI 도슨트 모드가 활성화되었습니다."); // [추가 사항] 알림 표시
-        }
-        console.log("Current mode:", currentMode);
+        updateModeUI(this.checked ? 'image_generation' : 'curator');
     });
-
-    // 초기 로드 시 체크박스 상태에 따라 모드 설정 (기본은 큐레이터 모드 = unchecked)
-    // 이 로직은 이벤트 리스너와 중복되므로, 초기 설정을 함수로 분리하거나,
-    // DOMContentLoaded 시점에 modeToggleButton.checked 상태에 따라 한 번만 실행되도록 조정할 수 있습니다.
-    // 현재는 이벤트 리스너가 초기 상태를 반영하도록 되어 있으므로, 중복 코드를 제거합니다.
-    // 대신, 초기 로드 시 `change` 이벤트를 강제로 발생시켜 초기 상태를 설정할 수 있습니다.
-    // modeToggleButton.dispatchEvent(new Event('change')); // 초기 모드 설정을 위해 강제로 change 이벤트 발생
 
     // Django CSRF 토큰을 쿠키에서 가져오는 헬퍼 함수
     function getCookie(name) {
@@ -252,4 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 초기 대화 기록 로드 (선택 사항: 서버에서 기존 대화 불러오기)
     // 이 부분은 `get_conversations_api`와 `get_conversation_history_api`를 사용하여 구현할 수 있습니다.
     // 현재는 'new-chat'으로 시작하도록 설정되어 있습니다.
+    
+    // 페이지 로드 시 입력 필드에 자동으로 포커스
+    userInput.focus();
 });

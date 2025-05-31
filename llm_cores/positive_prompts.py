@@ -1,4 +1,4 @@
-# D:\\project3_test\\llm_cores\\positive_prompts.py
+# D:\\project3_test\\\\llm_cores\\\\positive_prompts.py
 
 # 미리 정의된 긍정 프롬프트 카테고리 맵
 # 각 키는 카테고리 이름이고, 값은 해당 카테고리에 적용될 긍정 프롬프트 문자열입니다.
@@ -19,8 +19,8 @@ POSITIVE_PROMPT_MAP = {
     # [추가 부분] OpenPose ControlNet 사용 시 강조할 긍정 프롬프트
     # [수정 부분] openpose_focus 프롬프트에 자세 보존 강조 문구 추가
     "openpose_focus": "accurate human pose, clear body positioning, well-defined skeleton, precise limb articulation, natural hand gesture, detailed fingers, correct foot placement, dynamic full body, proper anatomical structure, no distorted limbs, realistic posture, **maintaining original pose, preserving original body language, pose transfer**",
-    # [추가 부분] 지브리 스타일 강조 프롬프트 (이전 답변에서 추가 제안)
-    "ghibli_style": "Studio Ghibli style, anime art style, hand-drawn animation, soft colors, dreamy atmosphere, painterly, whimsical, fantasy landscape, lush greenery, expressive characters, nostalgic, warm lighting, watercolor textures",
+    # [수정] 지브리 스타일 강조 프롬프트 디테일 강화
+    "ghibli_style": "Studio Ghibli style, anime art style, hand-drawn animation, soft colors, dreamy atmosphere, painterly, whimsical, fantasy landscape, lush greenery, expressive characters, nostalgic, warm lighting, watercolor textures, **ethereal glow, gentle sunlight, detailed natural elements, flowing hair, expressive eyes, subtle emotions, sense of wonder, peaceful, harmonious, vibrant but soft palette, traditional cel animation feel, fantastical creatures, magical realism, intricate architecture, serene landscapes, fluffy clouds, sparkling water, rustling leaves, sense of adventure, childlike innocence, heartwarming, comforting, soft focus, depth of field, atmospheric perspective, beautiful skies, vibrant flora and fauna, detailed background elements, a touch of melancholy, a sense of hope, a journey, a hidden world**",
 
     # [추가 부분 시작] 새로운 장르 및 화가 스타일 프롬프트 (전통 회화)
     "history_painting_style": "history painting, epic narrative, grand composition, dramatic scene, moralistic themes",
@@ -47,13 +47,13 @@ POSITIVE_PROMPT_MAP = {
     "constructivism_style": "Constructivism, geometric abstraction, industrial materials, functional forms, bold lines, graphic design",
     "suprematism_style": "Suprematism, pure geometric abstraction, fundamental forms, spiritual purity, minimalist",
     "dadaism_style": "Dadaism, absurd, anti-art, rebellious, collage, ready-made, nonsensical",
-    "surrealism_style": "Surrealist art, dreamlike, bizarre, illogical, subconscious, fantastical, uncanny",
+    "surrealism_style": "Surrealist art, dreamlike, bizarre, illogical, subconscious, fantastical, uncanny, **realistic rendering of impossible scenes, dreamlike yet tangible, photorealistic elements within fantastical context**", # 초현실주의 강화
     "abstract_expressionism_style": "Abstract Expressionism, spontaneous brushstrokes, non-representational, gestural, emotional intensity, large scale",
-    "pop_art_style": "Pop Art, bold colors, comic book style, consumerism, mass media, iconic imagery, graphic, bright",
+    "pop_art_style": "Pop Art, silkscreen, mass production, celebrity portraits, bright colors, iconic imagery, graphic, bright",
     "op_art_style": "Op Art, optical illusions, geometric patterns, vibrating effects, visual trickery, mesmerizing",
     "minimalism_style": "Minimalism, simplicity, essential forms, reductive, geometric, understated, clean",
     "conceptual_art_style": "Conceptual Art, idea-driven, thought-provoking, symbolic, abstract concepts, intellectual",
-    "photorealism_style": "Photorealism, hyperrealistic, ultra high definition, lifelike details, photographic accuracy",
+    "photorealism_style": "Photorealism, hyperrealistic, ultra high definition, lifelike details, photographic accuracy, **micro-details, subtle light interplay, accurate material rendering, crisp focus, intricate textures, realistic imperfections, naturalistic lighting, true-to-life colors, physically based rendering (PBR)**", # 포토리얼리즘 강화
     "street_art_style": "street art, graffiti, mural, urban art, bold lines, vibrant colors, stencil art, gritty, raw",
     "digital_art_style": "digital painting, digital illustration, smooth gradients, clean lines, crisp details, vibrant digital colors, high resolution",
     "nft_art_style": "NFT art, blockchain art, digital collectible, unique digital artwork, crypto art",
@@ -130,9 +130,9 @@ POSITIVE_PROMPT_MAP = {
     "edvard_munch_style": "Edvard Munch style, Expressionism, emotional, anxiety, psychological themes, swirling lines, dark colors",
     "wassily_kandinsky_style": "Wassily Kandinsky style, Abstract Expressionism, pure abstraction, geometric forms, spiritual, vibrant colors",
     "egon_schiele_style": "Egon Schiele style, Expressionism, raw, distorted figures, self-portraits, psychological, melancholic",
-    "georges_braque_style": "Georges Braque style, Cubism, fragmented forms, muted colors, analytical, still life",
+    "georges_braque_style": "Georges Braque style, Cubism, fragmented forms, geometric shapes, multiple perspectives, abstract composition, analytical, synthetic",
     "juan_gris_style": "Juan Gris style, Cubism, synthetic cubism, geometric forms, vibrant colors, collage elements",
-    "umberto_boccioni_style": "Umberto Boccioni style, Futurism, dynamic motion, fragmented forms, speed, energy, urban scenes",
+    "umberto_boccioni_style": "Umberto Boccioni style, Futurism, dynamic motion, speed, technology, urban energy, fragmented forms, blur of movement",
     "giacomo_balla_style": "Giacomo Balla style, Futurism, light and movement, abstract patterns, vibrant colors",
     "kazimir_malevich_style": "Kazimir Malevich style, Suprematism, pure geometric forms, black square, abstract, minimalist",
     "el_lissitzky_style": "El Lissitzky style, Constructivism, geometric abstraction, propaganda art, architectural, bold forms",
@@ -145,7 +145,7 @@ POSITIVE_PROMPT_MAP = {
     "jackson_pollock_style": "Jackson Pollock style, Abstract Expressionism, drip painting, action painting, chaotic, energetic",
     "mark_rothko_style": "Mark Rothko style, Abstract Expressionism, color field painting, large rectangular blocks of color, spiritual, contemplative",
     "willem_de_kooning_style": "Willem de Kooning style, Abstract Expressionism, gestural, raw, vibrant colors, distorted figures",
-    "andy_warhol_style": "Andy Warhol style, Pop Art, silkscreen, mass production, celebrity portraits, bright colors, iconic imagery",
+    "andy_warhol_style": "Andy Warhol style, Pop Art, silkscreen, mass production, celebrity portraits, bright colors, iconic imagery, graphic, bright",
     "roy_lichtenstein_style": "Roy Lichtenstein style, Pop Art, comic book panels, Ben-Day dots, bold outlines, ironic, graphic",
     "keith_haring_style": "Keith Haring style, Pop Art, street art, bold lines, dancing figures, social commentary, vibrant colors",
     "victor_vasarely_style": "Victor Vasarely style, Op Art, geometric patterns, optical illusions, vibrating effects, visual trickery, mesmerizing",
@@ -153,7 +153,7 @@ POSITIVE_PROMPT_MAP = {
     "donald_judd_style": "Donald Judd style, Minimalism, geometric forms, industrial materials, repetitive structures, simple",
     "frank_stella_style": "Frank Stella style, Minimalism, geometric patterns, bold colors, non-representational",
     "joseph_kosuth_style": "Joseph Kosuth style, Conceptual Art, text-based art, philosophical, idea-driven",
-    "sol_lewitt_style": "Sol LeWitt style, Conceptual Art, Minimalism, systematic art, geometric, instructions-based",
+    "sol_lewitt_style": "Sol LeWitt style, Conceptual Art, systematic art, geometric, instructions-based",
     "chuck_close_style": "Chuck Close style, Photorealism, hyperrealistic portraits, grid technique, large scale, detailed",
     "richard_estes_style": "Richard Estes style, Photorealism, urban landscapes, reflections, precise detail, glass, chrome",
     "ron_mueck_style": "Ron Mueck style, Hyperrealism sculpture, exaggerated scale, realistic human figures, unsettling", # 조각이지만 스타일로 추가
@@ -168,7 +168,8 @@ POSITIVE_PROMPT_MAP = {
     "kent_williams_style": "Kent Williams style, comic art, painting, expressive brushwork, dark themes, psychological, painterly",
     # [추가 부분 시작] 마블 및 디즈니 스타일 프롬프트
     "marvel_style": "Marvel comics art, superhero comic book, dynamic action pose, bold outlines, strong shading, vibrant colors, epic scene, cinematic, powerful, muscular figures",
-    "disney_style": "Disney animation style, classic cartoon, hand-drawn animation, whimsical, magical, expressive characters, fairytale, vibrant colors, smooth animation, clean lines, Pixar style, 3D animated movie, CGI, smooth rendering, family-friendly, charming",
+    # [수정] Disney 스타일 프롬프트 디테일 강화
+    "disney_style": "Disney animation style, classic cartoon, hand-drawn animation, whimsical, magical, expressive characters, fairytale, vibrant colors, smooth animation, clean lines, Pixar style, 3D animated movie, CGI, smooth rendering, family-friendly, charming, **soft character design, exaggerated expressions, fluid movement, round shapes, iconic character features, bright and cheerful palette, enchanting atmosphere, musical quality, heartwarming scenes, clear storytelling, traditional animation feel, magical elements, detailed backgrounds with a storybook quality**",
     # [추가 부분 시작] 동양화 스타일 프롬프트
     "korean_ink_wash_style": "Korean ink wash painting, sumukhwa, subtle ink tones, expressive brushwork, spiritual landscape, minimalist, serene, traditional Korean art",
     "korean_color_painting_style": "Korean color painting, chaesaekhwa, vibrant colors, intricate details, traditional patterns, rich pigments, decorative, folk art influence",
@@ -230,6 +231,13 @@ POSITIVE_PROMPT_MAP = {
     # [추가 부분 시작] 이미지 원본 유지 관련 프롬프트
     "original_pose_preservation": "maintain original pose, preserve original body language, pose transfer, consistent stance, accurate posture replication, no pose distortion",
     "original_color_palette_preservation": "maintain original color palette, preserve original colors, consistent color scheme, exact color reproduction, no color shift, original hues, natural colors",
-    "original_form_preservation": "maintain original form, preserve original shape, consistent silhouette, accurate object replication, no distortion of form, natural outline"
+    "original_form_preservation": "maintain original form, preserve original shape, consistent silhouette, accurate object replication, no distortion of form, natural outline",
+    # [새로 추가된 부분] 얼굴 특징 및 인종/민족적 특징 보존 프롬프트
+    "original_facial_features_preservation": "maintain original facial features, preserve original face structure, accurate facial proportions, consistent eye shape, nose shape, mouth shape, no facial distortion, original skin tone, original hair color and style, maintain original expression, preserve original ethnic features, consistent racial characteristics, East Asian features, Korean features, Japanese features, Chinese features",
+    "original_body_shape_preservation": "maintain original body shape, preserve original physique, consistent body proportions, accurate body contours, no body distortion",
+    # [새로 추가된 부분] 3D 및 입체감 강화 프롬프트
+    "enhanced_3d_volume": "strong volumetric presence, tangible forms, sculptural quality, deep spatial rendering, profound depth, realistic perspective, accurate foreshortening, dimensional accuracy, robust shadows, clear light and shadow interplay, sense of weight and mass, solid objects, three-dimensional space, immersive depth of field, realistic atmospheric perspective, physical dimensionality",
+    "realistic_lighting_shadows": "realistic lighting, natural shadows, volumetric light, soft ambient occlusion, sharp highlights, accurate reflections, subsurface scattering, global illumination, ray tracing, realistic light physics",
+    "architectural_detail": "precise architectural details, structural integrity, realistic material rendering (concrete, glass, metal), accurate building forms, urban realism, detailed infrastructure, strong sense of scale, volumetric buildings"
     # [추가 부분 끝]
 }

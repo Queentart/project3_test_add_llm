@@ -127,7 +127,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # --- ComfyUI API Settings ---
 # ComfyUI가 실행 중인 주소로 변경하세요.
 # 기본값은 로컬호스트 8188 포트입니다.
-COMFYUI_API_URL = "http://127.0.0.1:8188/prompt"
+COMFYUI_API_URL = "http://127.0.0.1:8188"
 COMFYUI_HISTORY_URL = "http://127.0.0.1:8188/history"
 COMFYUI_IMAGE_URL = "http://127.0.0.1:8188/view"
 

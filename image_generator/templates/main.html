@@ -15,42 +15,60 @@
         <p>궁금한 작품에 대해 질문하거나, 상상하는 이미지를 프롬프트로 만들어 보세요.</p>
     </section>
 
-    <div class="chatbot-container">
-        <div class="chat-header">
-            AI 도슨트 챗봇
-        </div>
-        <div class="chat-history" id="chat-history">
-            <div class="message-bubble ai">
-                <div class="message-content">안녕하세요! 무엇을 도와드릴까요?</div>
+    <div class="chatbot-layout-wrapper"> {# [추가 부분] 전체 레이아웃 래퍼 #}
+        <div class="conversation-sidebar"> {# [추가 부분] 대화 기록 사이드바 #}
+            <div class="sidebar-header">
+                <h2>대화 기록</h2>
+                <button id="new-chat-button" class="new-chat-button">
+                    <i class="bi bi-plus-circle-fill"></i> 새 채팅
+                </button>
             </div>
+            <ul class="conversation-list" id="conversation-list">
+                {# 대화 아이템들이 여기에 동적으로 로드됩니다. #}
+            </ul>
+            {# [수정 부분] "더 보기" 버튼을 ul 바깥, sidebar 안에 배치 #}
+            <button id="load-more-conversations" class="load-more-button" style="display: none;">
+                더 보기 <i class="bi bi-arrow-down-circle-fill"></i>
+            </button>
         </div>
 
-        {# [수정 사항] 이미지 미리보기 영역을 채팅 입력창 위로 이동 #}
-        <div id="image-preview-area" class="image-upload-preview" style="display: none;">
-            <img id="uploaded-image-thumbnail" src="#" alt="미리보기">
-            <span id="uploaded-image-name"></span>
-            <span class="remove-image" id="remove-image-button">X</span>
-        </div>
-        {# [수정 사항] End #}
+        <div class="chatbot-container">
+            <div class="chat-header">
+                AI 도슨트 챗봇
+            </div>
+            <div class="chat-history" id="chat-history">
+                <div class="message-bubble ai">
+                    <div class="message-content">안녕하세요! 무엇을 도와드릴까요?</div>
+                </div>
+            </div>
 
-        <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="메시지를 입력하거나 이미지 분석 프롬프트를 입력하세요...">
-            
-            <label for="image-upload-input" class="image-upload-button" title="이미지 업로드">
-                <i class="bi bi-image"></i>
-                <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
-            </label>
-            
-            <div class="checkbox-wrapper-56">
-                <label class="container">
-                    <input type="checkbox" id="mode-toggle-button">
-                    <div class="checkmark"></div>
+            {# [수정 사항] 이미지 미리보기 영역을 채팅 입력창 위로 이동 #}
+            <div id="image-preview-area" class="image-upload-preview" style="display: none;">
+                <img id="uploaded-image-thumbnail" src="#" alt="미리보기">
+                <span id="uploaded-image-name"></span>
+                <span class="remove-image" id="remove-image-button">X</span>
+            </div>
+            {# [수정 사항] End #}
+
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="메시지를 입력하거나 이미지 분석 프롬프트를 입력하세요...">
+                
+                <label for="image-upload-input" class="image-upload-button" title="이미지 업로드">
+                    <i class="bi bi-image"></i>
+                    <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
                 </label>
-            </div>
+                
+                <div class="checkbox-wrapper-56">
+                    <label class="container">
+                        <input type="checkbox" id="mode-toggle-button">
+                        <div class="checkmark"></div>
+                    </label>
+                </div>
 
-            <button id="send-button"><i class="bi bi-send-fill"></i></button>
+                <button id="send-button"><i class="bi bi-send-fill"></i></button>
+            </div>
         </div>
-    </div>
+    </div> {# [추가 부분] 전체 레이아웃 래퍼 닫기 #}
 {% endblock %}
 
 {% block extra_js %}

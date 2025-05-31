@@ -8,27 +8,61 @@ body {
     padding: 0;
     box-sizing: border-box;
     color: #333;
+    /*background-color: #f0f2f5;*/ /* [수정 부분] 전체 배경색 변경 */
 }
 
-/* 챗봇 컨테이너 */
+/* 메인 페이지 인트로 */
+.main-page-intro {
+    text-align: center;
+    margin: 20px auto 30px auto;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.main-page-intro h1 {
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.main-page-intro p {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+
+/* 전체 챗봇 레이아웃 래퍼 */
+.chatbot-layout-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 상단 정렬 */
+    width: 100%;
+    max-width: 1300px; /* 전체 너비 증가 */
+    margin: 40px auto;
+    gap: 20px; /* 사이드바와 챗봇 컨테이너 사이 간격 */
+    height: 85vh; /* 챗봇 컨테이너와 동일한 높이 */
+    min-height: 650px;
+    max-height: 900px;
+}
+
+/* 챗봇 컨테이너 (기존) */
 .chatbot-container {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 1000px;
-    height: 85vh;
-    min-height: 650px;
-    max-height: 900px;
+    flex-grow: 1; /* 남은 공간을 채우도록 설정 */
+    max-width: 800px; /* 챗봇 컨테이너의 최대 너비 조정 */
+    height: 100%; /* 부모 높이에 맞춤 */
     background-color: #ffffff;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    margin: 40px auto;
+    /* margin: 40px auto; 제거 */
 }
 
-/* 채팅 헤더 (선택 사항) */
+/* 채팅 헤더 */
 .chat-header {
-    background-color: #A08C7F;
+    background-color: #5F6A6A; /* [수정 부분] 차분한 진회색 */
     color: #ffffff;
     padding: 15px 20px;
     font-size: 1.2em;
@@ -53,7 +87,7 @@ body {
 .message-bubble {
     display: flex;
     align-items: flex-end;
-    max-width: 90%; /* [수정됨] 메시지 버블 최대 너비 증가 (80% -> 90%) */
+    max-width: 90%;
 }
 
 .message-bubble.user {
@@ -76,7 +110,7 @@ body {
 }
 
 .message-bubble.user .message-content {
-    background-color: #8C9B8B ;
+    background-color: #778899; /* [수정 부분] 사용자 채팅 버블의 배경색 (Light Slate Gray) */
     color: #ffffff;
     border-bottom-right-radius: 5px;
 }
@@ -106,26 +140,26 @@ body {
     font-style: italic;
     color: #666;
     margin-top: 10px;
-    flex-direction: row; /* 로딩 스피너를 가로로 표시 */
-    justify-content: center; /* 점들을 가로 중앙에 정렬 */
-    align-items: center; /* 점들을 세로 중앙에 정렬 */
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
-/* [추가 사항] 로딩 스피너 내부 메시지 콘텐츠 스타일 */
+/* 로딩 스피너 내부 메시지 콘텐츠 스타일 */
 .loading-spinner .message-content {
-    display: flex; /* [추가 사항] 내부 콘텐츠를 flex 컨테이너로 설정 */
-    flex-direction: row; /* [추가 사항] 점들을 가로로 배열 */
-    gap: 5px; /* [추가 사항] 점들 사이의 간격 조정 */
-    background-color: #e2e6ea; /* 기존 AI 메시지 배경색 유지 */
-    padding: 12px 18px; /* 기존 AI 메시지 패딩 유지 */
-    border-radius: 20px; /* 기존 AI 메시지 테두리 둥글게 유지 */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* 기존 AI 메시지 그림자 유지 */
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    background-color: #e2e6ea;
+    padding: 12px 18px;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .loading-spinner .dot-pulse {
+    background-color: #8C9CA4; /* [수정 부분] 로딩 스피너 점의 색상 (Blue-Grey) */
     width: 10px;
     height: 10px;
-    background-color: #e67f6a; /* 점 색상 변경 (예: 노란색) */
     border-radius: 50%;
     animation: dotPulse 1s infinite ease-in-out;
 }
@@ -145,11 +179,9 @@ body {
 
 /* 알림 메시지 스타일 */
 .message-bubble.notification {
-    align-self: flex-end; /* 우측 정렬 */
-    max-width: 90%; /* 너비 증가 */
-    /* [수정됨] margin 속성 조정: 상하 여백만 지정하고, 좌우 여백은 flexbox의 align-self에 맡김 */
-    margin: 10px 0; /* 상하 10px, 좌우 0 */
-    /* [추가됨] 내부 콘텐츠를 flex 컨테이너로 설정하고 우측 정렬 */
+    align-self: flex-end;
+    max-width: 90%;
+    margin: 10px 0;
     display: flex;
     justify-content: flex-end;
 }
@@ -159,51 +191,49 @@ body {
     color: #0c5460;
     border-radius: 10px;
     font-size: 0.85em;
-    /* [수정됨] 사용자 메시지 버블과 동일한 패딩으로 조정 */
     padding: 12px 18px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    text-align: center; /* 알림 메시지 내용은 중앙 정렬 유지 */
+    text-align: center;
 }
 
 /* 이미지 미리보기 영역 스타일 */
 .image-upload-preview {
     display: flex;
     align-items: center;
-    gap: 10px; /* 요소 간 간격 넓힘 */
+    gap: 10px;
     background-color: #e9ecef;
-    padding: 10px 15px; /* 패딩 증가 */
-    border-radius: 10px; /* 모서리 둥글게 */
+    padding: 10px 15px;
+    border-radius: 10px;
     font-size: 0.85em;
     color: #555;
-    margin: 0 20px 15px 20px; /* 하단 여백 및 좌우 여백 추가 */
+    margin: 0 20px 15px 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    max-width: calc(100% - 40px); /* 좌우 여백 고려한 최대 너비 */
+    max-width: calc(100% - 40px);
     flex-shrink: 0;
-    /* 작은 직사각형 형태로 고정 */
-    height: 80px; /* 고정 높이 */
-    overflow: hidden; /* 내용이 넘치면 숨김 */
+    height: 80px;
+    overflow: hidden;
 }
 
 .image-upload-preview #uploaded-image-thumbnail {
-    width: 60px; /* 썸네일 너비 고정 */
-    height: 60px; /* 썸네일 높이 고정 */
-    object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
-    border-radius: 8px; /* 썸네일 모서리 둥글게 */
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
     flex-shrink: 0;
 }
 
 .image-upload-preview #uploaded-image-name {
-    flex-grow: 1; /* 파일 이름이 남은 공간을 차지하도록 */
+    flex-grow: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 10px; /* 파일 이름과 X 버튼 사이 간격 */
+    margin-right: 10px;
 }
 
 .image-upload-preview .remove-image {
+    color: #dc3545;
     cursor: pointer;
     font-weight: bold;
-    color: #dc3545; /* 빨간색 X 버튼 */
     font-size: 1.2em;
     flex-shrink: 0;
 }
@@ -227,7 +257,7 @@ body {
 
 .chat-input-area input[type="text"] {
     flex-grow: 1;
-    max-width: 850px;
+    /* max-width: 850px; */ /* [주석 처리] 이전 max-width 제거 */
     padding: 12px 15px;
     border: 1px solid #ced4da;
     border-radius: 25px;
@@ -237,11 +267,12 @@ body {
 }
 
 .chat-input-area input[type="text"]:focus {
-    border-color: #C9CFBD;
+    border-color: #5F6A6A; /* [수정 부분] 입력 필드 포커스 시 색상도 통일된 진회색으로 */
 }
 
+/* Send Button */
 .chat-input-area button {
-    background-color: #A08C7F;
+    background-color: #5F6A6A; /* [수정 부분] Send 버튼도 chat-header와 동일한 진회색 */
     color: #ffffff;
     border: none;
     border-radius: 50%;
@@ -257,13 +288,13 @@ body {
 }
 
 .chat-input-area button:hover {
-    background-color: #7c6c61;
+    background-color: #4A5459; /* [수정 부분] 더 어두운 회색으로 호버 효과 */
     transform: scale(1.05);
 }
 
 .chat-input-area button:disabled {
     background-color: #cccccc;
-    cursor: not_allowed;
+    cursor: not-allowed;
 }
 
 /* 이미지 업로드 버튼 */
@@ -276,7 +307,7 @@ body {
 }
 
 .image-upload-button {
-    background-color: #76a798;
+    background-color: #778899; /* [수정 부분] 이미지 업로드 버튼 (Light Slate Gray) */
     color: #ffffff;
     border: none;
     border-radius: 50%;
@@ -292,7 +323,7 @@ body {
 }
 
 .image-upload-button:hover {
-    background-color: #67837a;
+    background-color: #61717C; /* [수정 부분] 호버 시 약간 더 어두운 색상 */
 }
 
 
@@ -349,20 +380,173 @@ body {
 }
 
 .checkbox-wrapper-56 .container input:checked::after {
+  /* 체크박스 체크 시 색상도 전체적인 톤에 맞게 변경 */
   transition: .3s;
-  border: solid #33ff00;
+  border: solid #03ff89; /* [수정 부분] chat-header와 동일한 색상으로 */
   border-width: 0 0.1em 0.1em 0;
   transform: rotate(45deg);
 }
 
+/* [추가 부분 시작] 대화 기록 사이드바 스타일 */
+.conversation-sidebar {
+    width: 280px; /* 사이드바 너비 */
+    height: 100%; /* 부모 높이에 맞춤 */
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 내용이 넘칠 경우 스크롤 처리 */
+}
+
+.sidebar-header {
+    background-color: #5F6A6A; /* [수정 부분] chat-header와 동일한 진회색 */
+    color: #ffffff;
+    padding: 15px 20px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #F8F8F8;
+}
+
+.new-chat-button {
+    background-color: #778899; /* [수정 부분] Light Slate Gray */
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.new-chat-button:hover {
+    background-color: #61717C; /* [수정 부분] 호버 시 약간 더 어두운 색상 */
+    transform: scale(1.02);
+}
+
+.conversation-list {
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    flex-grow: 1;
+    overflow-y: auto; /* 대화 목록이 길어지면 스크롤 */
+    background-color: #f0f2f5; /* [수정 부분] 목록 배경색 (body 배경색과 동일) */
+}
+
+.conversation-item {
+    background-color: #ffffff;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    font-size: 0.9em;
+    color: #444;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.conversation-item:hover {
+    background-color: #e9ecef;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.conversation-item.active {
+    background-color: #d1ecf1; /* [수정 부분] 현재 선택된 대화 (기존 유지) */
+    color: #0c5460;
+    font-weight: bold;
+    border: 1px solid #a7d9ed;
+}
+
+.conversation-title {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.conversation-date {
+    font-size: 0.8em;
+    color: #888;
+    flex-shrink: 0;
+}
+
+.load-more-button {
+    background-color: #e2e6ea;
+    color: #555;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin: 10px auto;
+    display: block; /* 중앙 정렬 */
+    width: calc(100% - 20px); /* 패딩 제외한 너비 */
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.load-more-button:hover {
+    background-color: #d1d4d7;
+    transform: scale(1.02);
+}
+/* [추가 부분 끝] 대화 기록 사이드바 스타일 */
+
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+    .chatbot-layout-wrapper {
+        flex-direction: column; /* 모바일에서는 세로로 쌓이도록 */
+        margin: 0;
+        height: auto; /* 높이 자동 조정 */
+        min-height: unset;
+        max-height: unset;
+        gap: 0;
+    }
+
     .chatbot-container {
-        height: 90vh;
+        height: 90vh; /* 모바일에서 챗봇 컨테이너 높이 조정 */
         border-radius: 0;
         box-shadow: none;
         margin: 0;
+        max-width: none; /* 너비 제한 해제 */
+    }
+
+    .conversation-sidebar {
+        width: 100%; /* 모바일에서는 전체 너비 사용 */
+        height: auto; /* 높이 자동 조정 */
+        border-radius: 0;
+        box-shadow: none;
+        padding-bottom: 10px; /* 하단 여백 추가 */
+    }
+
+    .sidebar-header {
+        border-radius: 0;
+    }
+
+    .conversation-list {
+        max-height: 200px; /* 모바일에서 대화 기록 목록의 최대 높이 제한 */
+        overflow-y: auto;
     }
 
     .chat-input-area {
@@ -386,9 +570,27 @@ body {
         margin-left: auto;
     }
 
-    /* 모바일에서 이미지 미리보기 위치 조정 */
     .image-upload-preview {
-        margin: 0 15px 10px 15px; /* 모바일 화면에 맞춰 여백 조정 */
+        margin: 0 15px 10px 15px;
         max-width: calc(100% - 30px);
     }
+}
+
+/* static/css/main.css 또는 style.css 에 추가 */
+.message-bubble.has-image {
+    display: flex;
+    flex-direction: column; /* 이미지와 텍스트를 수직으로 쌓도록 강제 */
+    align-items: flex-start; /* 왼쪽 정렬 (필요에 따라 center 등으로 변경 가능) */
+    gap: 8px; /* 이미지와 텍스트 사이 간격 */
+}
+
+.message-bubble.has-image .message-content {
+    width: 100%; /* 텍스트 콘텐츠가 항상 전체 너비를 차지하도록 */
+    word-wrap: break-word; /* 긴 단어가 잘리지 않고 줄 바꿈 되도록 */
+}
+
+.message-bubble.has-image .image-message {
+    max-width: 100%; /* 이미지가 버블 너비를 넘지 않도록 */
+    height: auto; /* 이미지 비율 유지 */
+    display: block; /* 이미지를 블록 레벨 요소로 만들어 독립적인 줄에 위치 */
 }

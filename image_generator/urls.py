@@ -1,5 +1,5 @@
 # image_generator/urls.py (앱 레벨 URL)
-from django.urls import path
+from django.urls import path, include # include 임포트 추가
 from . import views # 이 앱의 views.py에서 뷰 함수들을 임포트합니다.
 from django.conf import settings # MEDIA_URL 설정을 위함
 from django.conf.urls.static import static # MEDIA_ROOT 설정을 위함
@@ -17,14 +17,15 @@ urlpatterns = [
 
     # API 엔드포인트 (기존 이름 유지)
     path('api/process_request/', views.process_request_api, name='process_request_api'),
-    path('api/task-status/<uuid:task_id>/', views.check_task_status_api, name='check_task_status'),
+    # [추가됨] 이미지 생성 작업 상태 확인 API 엔드포인트
+    # <uuid:task_id>는 UUID 형식의 task_id를 캡처합니다.
+    path('api/tasks/<uuid:task_id>/status/', views.check_task_status_api, name='check_task_status'),
     path('api/conversations/', views.get_conversations_api, name='api_conversations'),
-    path('api/conversations/<uuid:conversation_id>/messages/', views.get_conversation_history_api, name='api_conversation_messages'),
+    path('api/conversations/<uuid:conversation_id>/', views.get_conversation_history_api, name='api_conversation_history'),
+    # [재추가됨] delete_oldest_conversations_api 함수 경로
+    path('api/conversations/delete_oldest/', views.delete_oldest_conversations_api, name='api_delete_oldest_conversations'),
 ]
 
-# 개발 서버에서 MEDIA_ROOT의 파일을 서빙하기 위한 설정 (배포 시에는 웹 서버가 처리)
+# 개발 환경에서 미디어 파일 서빙을 위한 설정
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# 앱 레벨 urls.py에서는 static/media 파일 서빙 설정을 직접 하지 않습니다.
-# 이 부분은 프로젝트 레벨 urls.py (config/urls.py)에서 담당합니다.

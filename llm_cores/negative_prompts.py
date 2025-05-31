@@ -1,4 +1,4 @@
-# D:\\project3_test\\llm_cores\\negative_prompts.py
+# D:\\project3_test\\\\llm_cores\\\\negative_prompts.py
 
 # [추가 부분] 미리 정의된 부정 프롬프트 카테고리 맵
 # 각 키는 카테고리 이름이고, 값은 해당 카테고리에 적용될 부정 프롬프트 문자열입니다.
@@ -36,7 +36,8 @@ NEGATIVE_PROMPT_MAP = {
     "anti_digital_art": "hand-drawn, traditional medium, brushstrokes, paper texture, canvas texture", # 디지털 아트와 상충
     # [추가 부분 시작] 마블 및 디즈니 스타일과 상충되는 부정 프롬프트
     "anti_marvel_style": "soft shading, pastel colors, realistic proportions, subtle emotions, flat colors, watercolor, painterly, children's book illustration", # 마블과 상충
-    "anti_disney_style": "gritty, dark, violent, horror, disturbing, hyperrealistic, adult themes, complex shading, rough lines, photorealistic, overly detailed textures", # 디즈니와 상충
+    # [수정] Disney 스타일과 상충되는 부정 프롬프트 디테일 강화
+    "anti_disney_style": "gritty, dark, violent, horror, disturbing, hyperrealistic, adult themes, complex shading, rough lines, photorealistic, overly detailed textures, **sharp angles, realistic anatomy, muted colors, abstract forms, harsh lighting, gritty textures, dramatic shadows, non-expressive faces, stiff poses, complex narratives, mature themes, disturbing imagery, pixelated, low resolution, traditional painting, oil painting, watercolor**",
     # [추가 부분 시작] 동양화 스타일과 상충되는 부정 프롬프트
     "anti_ink_wash": "vibrant colors, excessive detail, photorealistic, Western art style, complex composition, harsh lines, strong contrast", # 수묵화와 상충
     "anti_color_painting": "monochrome, ink wash, minimalist, muted colors, sketchy, rough lines, abstract", # 채색화와 상충
@@ -84,12 +85,20 @@ NEGATIVE_PROMPT_MAP = {
     "anti_kano_eitoku": "subtle, minimalist, Western art style, small scale, simple", # 가노 에이토쿠
     "anti_kano_tanyu": "bold, dynamic, vibrant colors, Western art style, large scale", # 가노 단유
     "anti_ogata_korin": "subtle, realistic, Western art style, complex composition, muted colors", # 오가타 고린
-    "anti_tawaraya_sotatsu": "subtle, realistic, Western art style, complex composition, muted colors", # 다와라야 소타쓰
+    "tawaraya_sotatsu_style": "subtle, realistic, Western art style, complex composition, muted colors", # 다와라야 소타쓰
     # [추가 부분 끝]
 
     # [추가 부분 시작] 이미지 원본 유지 방지 관련 부정 프롬프트
     "distorted_pose": "distorted pose, unnatural pose, mutated limbs, twisted posture, changed body language, incorrect stance, altered pose",
     "color_shift": "color shift, desaturated colors, oversaturated colors, monochrome, grayscale, altered color palette, unnatural colors, vibrant colors (if undesired), muted colors (if undesired)",
-    "distorted_form": "distorted form, warped shape, altered silhouette, changed outline, unrecognizable object, blurred form, melted, deformed"
+    "distorted_form": "distorted form, warped shape, altered silhouette, changed outline, unrecognizable object, blurred form, melted, deformed",
+    # [새로 추가된 부분] 얼굴 특징 및 인종/민족적 특징 변경 방지 부정 프롬프트
+    "distorted_facial_features": "distorted face, malformed eyes, crooked nose, misshapen mouth, asymmetrical face, changed expression, wrong skin tone, altered hair, unwanted facial hair, blurred face, ugly face, deformed face",
+    "unwanted_ethnic_shift": "western facial features, caucasian features, african features, middle eastern features, indian features, european features, different ethnicity, altered racial characteristics, changed cultural appearance, non-East Asian features, non-Korean features, non-Japanese features, non-Chinese features",
+    "distorted_body_shape": "distorted body, warped body shape, altered physique, inconsistent body proportions, deformed body contours",
+    # [새로 추가된 부분] 3D 및 입체감 부족 방지 부정 프롬프트
+    "lack_of_realism": "unrealistic, artificial, fake, cartoonish, painterly (if realism desired), stylized (if realism desired), simplified, abstract, flat rendering, poor texture, blurry, unsharp, low fidelity, plastic look, fake look, CGI look (if undesired)",
+    "lack_of_3d_depth": "flat, 2D, no depth, paper-thin, lacking volume, shallow perspective, poor dimensionality, weak shadows, no sense of mass, un-sculptural, silhouette-like",
+    "unwanted_surrealism_distortion": "distorted reality, illogical composition, abstract elements (if realism desired), dreamlike blur, non-tangible forms, impossible physics (if realism desired)"
     # [추가 부분 끝]
 }

@@ -1,5 +1,5 @@
 {
-  "prompt": {
+  "prompt":{
     "1": {
       "inputs": {
         "ckpt_name": "sd_xl_base_1.0.safetensors"
@@ -86,7 +86,7 @@
     },
     "7": {
       "inputs": {
-        "weight": 1.0000000000000002,
+        "weight": 0.7,
         "weight_type": "linear",
         "combine_embeds": "concat",
         "start_at": 0,
@@ -133,7 +133,7 @@
     },
     "9": {
       "inputs": {
-        "image": "koyoonjeong.jpg"
+        "image": ""
       },
       "class_type": "LoadImage",
       "_meta": {
@@ -143,7 +143,7 @@
     "10": {
       "inputs": {
         "system_prompt": "superior",
-        "user_prompt": "Cartoonish, chibi, overly simplistic, unrealistic proportions, child-like drawing, sketchy lines, rough edges, pixelated, low quality, blurry, distorted, Multiple characters, crowded background, distracting elements, too busy, ugly background, deformed hands, extra limbs, disfigured face, unnatural pose.",
+        "user_prompt": "",
         "clip": [
           "1",
           1
@@ -157,7 +157,7 @@
     "11": {
       "inputs": {
         "system_prompt": "superior",
-        "user_prompt": "A beautiful woman, inspired by Kim Tae-hee, reimagined in the distinct anime art style of Sailor Moon, maintaining the original photo's color palette, vibrant colors, large expressive eyes, delicate features, magical girl aesthetics, clean line art, luminous skin, dynamic pose, high detail, studio anime lighting, cel-shaded, animated movie still, solo.",
+        "user_prompt": "",
         "clip": [
           "1",
           1

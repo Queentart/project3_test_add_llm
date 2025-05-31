@@ -1,5 +1,5 @@
 {
-  "prompt": {
+  "prompt": { 
     "3": {
       "inputs": {
         "seed": 156680208700286,
@@ -41,8 +41,8 @@
     },
     "5": {
       "inputs": {
-        "width": 512,
-        "height": 512,
+        "width": 1024,
+        "height": 1024,
         "batch_size": 1
       },
       "class_type": "EmptyLatentImage",
@@ -52,7 +52,7 @@
     },
     "6": {
       "inputs": {
-        "text": "beautiful scenery nature glass bottle landscape, , purple galaxy bottle,",
+        "text": "",
         "clip": [
           "4",
           1

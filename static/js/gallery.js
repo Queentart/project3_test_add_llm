@@ -1,154 +1,175 @@
 // static/js/gallery.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('museum-search-input');
-    const searchButton = document.getElementById('museum-search-button');
-    const regionSelect = document.getElementById('museum-region-select');
-    const typeSelect = document.getElementById('museum-type-select');
-    const resetButton = document.getElementById('museum-reset-filters');
-    const museumListContainer = document.querySelector('.museum-list-container');
+    const citySelect = document.getElementById('city-select');
+    // const museumTypeSelect = document.getElementById('museum-type-select'); // 유형 선택 드롭다운은 HTML에서 제거되었으므로 주석 처리
+    const resetFilterBtn = document.getElementById('reset-filter-btn');
+    const museumListDiv = document.getElementById('museum-list'); // 목록을 렌더링할 div
+    const mapContainer = document.getElementById('map'); // 지도 컨테이너
 
-    // [수정 사항] 백엔드에서 전달된 정적 데이터를 저장할 변수
-    // gallery.html 템플릿 내에 이 데이터를 JSON 형태로 삽입할 예정입니다.
-    let allMuseums = []; 
-    // [수정 사항] End
+    // [추가] 모달 관련 요소 참조
+    const museumDetailModal = new bootstrap.Modal(document.getElementById('museumDetailModal')); // Bootstrap Modal 객체 생성
+    const museumDetailModalLabel = document.getElementById('museumDetailModalLabel'); // 모달 제목
+    const museumDetailModalBody = document.getElementById('museumDetailModalBody'); // 모달 본문
 
-    // [수정 사항] 초기 데이터를 로드하고 필터링하는 함수
-    function loadAndFilterMuseums() {
-        // HTML에서 hidden input 등으로 JSON 데이터를 가져와 allMuseums에 할당합니다.
-        // 이 부분은 gallery.html의 스크립트 블록에서 초기화될 것입니다.
-        // 예를 들어: allMuseums = JSON.parse(document.getElementById('museum-data').textContent);
-        // 지금은 임시로 더미 데이터를 사용합니다. 실제로는 뷰에서 전달받을 데이터입니다.
-        if (allMuseums.length === 0) { // 데이터가 아직 로드되지 않았다면 더미 데이터 사용 (개발용)
-            // [주석 처리] 더 이상 쓰이지 않는 더미 데이터 (실제로는 뷰에서 전달)
-            // console.warn("allMuseums is empty. Using dummy data for development.");
-            // allMuseums = [
-            //     {
-            //         id: 1,
-            //         name: "국립현대미술관 서울관",
-            //         address: "서울특별시 종로구 삼청로 30",
-            //         phone_number: "02-3701-9500",
-            //         operating_hours: "10:00 - 18:00 (월요일 휴관)",
-            //         description: "다양한 현대미술 작품을 만날 수 있는 곳입니다.",
-            //         website: "https://www.mmca.go.kr",
-            //         image_url: "/static/images/default_museum_mmca.jpg", // 더미 이미지
-            //         region: "seoul",
-            //         type: "art_museum"
-            //     },
-            //     {
-            //         id: 2,
-            //         name: "디뮤지엄",
-            //         address: "서울특별시 성동구 왕십리로83-21",
-            //         phone_number: "02-1670-0062",
-            //         operating_hours: "11:00 - 19:00 (월요일 휴관)",
-            //         description: "젊고 감각적인 전시가 열리는 미술관입니다.",
-            //         website: "https://www.dmuseum.org",
-            //         image_url: "/static/images/default_museum_dmuseum.jpg",
-            //         region: "seoul",
-            //         type: "gallery"
-            //     },
-            //     {
-            //         id: 3,
-            //         name: "부산시립미술관",
-            //         address: "부산광역시 해운대구 APEC로 58",
-            //         phone_number: "051-740-4200",
-            //         operating_hours: "10:00 - 18:00 (월요일 휴관)",
-            //         description: "부산 지역을 대표하는 공립 미술관입니다.",
-            //         website: "http://art.busan.go.kr/",
-            //         image_url: "/static/images/default_museum_busan.jpg",
-            //         region: "busan",
-            //         type: "art_museum"
-            //     },
-            //     {
-            //         id: 4,
-            //         name: "서울시립미술관",
-            //         address: "서울특별시 중구 덕수궁길 61",
-            //         phone_number: "02-2124-8800",
-            //         operating_hours: "10:00 - 20:00 (월요일 휴관)",
-            //         description: "근대에서 현대까지 다양한 예술을 전시합니다.",
-            //         website: "https://sema.seoul.go.kr",
-            //         image_url: "/static/images/default_museum_sema.jpg",
-            //         region: "seoul",
-            //         type: "art_museum"
-            //     }
-            // ];
-            // [주석 처리] End
+    let allMuseums = []; // 모든 전시관 데이터를 저장할 변수
+    let map = null; // Leaflet 지도 객체
+    let markers = []; // 지도에 표시된 마커 배열
+
+    // 1. 지도 초기화 함수
+    function initMap() {
+        if (map) { // 이미 지도가 초기화되어 있다면 다시 초기화하지 않음
+            map.remove();
         }
+        // 기본 중심 좌표 (서울 시청)와 확대 레벨 설정
+        map = L.map(mapContainer).setView([37.5665, 126.9780], 12); // 서울 중심
 
-        const searchTerm = searchInput.value.trim().toLowerCase();
-        const selectedRegion = regionSelect.value;
-        const selectedType = typeSelect.value;
+        // OpenStreetMap 타일 레이어 추가 (API 키 불필요)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-        const filteredMuseums = allMuseums.filter(museum => {
-            const matchesSearch = searchTerm === '' || 
-                                  museum.name.toLowerCase().includes(searchTerm) || 
-                                  museum.address.toLowerCase().includes(searchTerm) ||
-                                  (museum.description && museum.description.toLowerCase().includes(searchTerm));
-            const matchesRegion = selectedRegion === '' || museum.region === selectedRegion;
-            const matchesType = selectedType === '' || museum.type === selectedType;
-            
-            return matchesSearch && matchesRegion && matchesType;
-        });
-
-        renderMuseumList(filteredMuseums);
+        console.log("Leaflet Map initialized with OpenStreetMap style."); // 로그 메시지 변경
+        console.log("Map container element:", mapContainer); // 지도 컨테이너 요소 확인 로그
     }
 
-    // 전시관/미술관 목록을 렌더링하는 함수 (수정 없음)
-    function renderMuseumList(museums) {
-        museumListContainer.innerHTML = ''; // 기존 내용 지우기
-        if (museums.length === 0) {
-            museumListContainer.innerHTML = '<p class="no-results">검색 결과가 없습니다.</p>';
+    // 2. 마커 표시 함수
+    function displayMarker(museum) {
+        if (!museum.latitude || !museum.longitude) {
+            console.warn("Museum missing latitude or longitude:", museum);
             return;
         }
 
-        museums.forEach(museum => {
-            const museumCard = document.createElement('div');
-            museumCard.classList.add('museum-card');
-            museumCard.dataset.museumId = museum.id; 
+        // [추가] Leaflet 커스텀 아이콘 정의 (부트스트랩 아이콘 사용)
+        const customMuseumIcon = L.divIcon({
+            className: 'custom-div-icon', // CSS에서 스타일링할 클래스
+            html: '<i class="bi bi-shop"></i>', // 부트스트랩 건물 아이콘
+            iconSize: [30, 30], // 아이콘의 예상 크기 (CSS에서 실제 폰트 크기 조정)
+            iconAnchor: [15, 30], // 아이콘의 중심점 (하단 중앙)
+            popupAnchor: [0, -30] // 팝업이 열릴 위치 조정
+        });
 
-            museumCard.innerHTML = `
-                <img src="${museum.image_url || '/static/images/default_museum.jpg'}" alt="${museum.name} 이미지">
-                <div class="museum-card-info">
-                    <h3>${museum.name}</h3>
-                    <p class="address"><i class="bi bi-geo-alt-fill"></i> ${museum.address}</p>
-                    <p class="hours"><i class="bi bi-clock-fill"></i> ${museum.operating_hours || '정보 없음'}</p>
-                    <p class="phone"><i class="bi bi-telephone-fill"></i> ${museum.phone_number || '정보 없음'}</p>
-                    <p class="description">${museum.description || '설명 없음'}</p>
-                    ${museum.website ? `<p class="website-link"><i class="bi bi-globe"></i> <a href="${museum.website}" target="_blank">웹사이트 방문</a></p>` : ''}
-                    <div class="museum-card-buttons">
-                        <a href="/museums/${museum.id}/" class="btn-detail">상세보기</a>
-                    </div>
-                </div>
+        const marker = L.marker([museum.latitude, museum.longitude], { icon: customMuseumIcon })
+            .addTo(map)
+            .bindPopup(`<b>${museum.name}</b><br>${museum.address}<br>${museum.type || ''}`);
+
+        marker.on('click', function() {
+            showMuseumDetailModal(museum);
+        });
+        markers.push(marker); // 마커 배열에 추가
+    }
+
+    // 3. 박물관 목록 렌더링 함수
+    function renderMuseums(dataToRender) {
+        museumListDiv.innerHTML = ''; // 기존 목록 초기화
+
+        // 기존 마커 모두 제거
+        markers.forEach(marker => map.removeLayer(marker));
+        markers.length = 0; // 배열 비우기
+
+        if (dataToRender.length === 0) {
+            museumListDiv.innerHTML = '<p class="no-results">검색 결과가 없습니다.</p>';
+            return;
+        }
+
+        dataToRender.forEach(museum => {
+            const museumItem = document.createElement('div');
+            museumItem.className = 'museum-item';
+            museumItem.innerHTML = `
+                <h3>${museum.name}</h3>
+                <p>${museum.address}</p>
+                <p><strong>유형:</strong> ${museum.type || 'N/A'}</p>
+                <p><strong>운영시간:</strong> ${museum.operating_hours || '정보 없음'}</p>
+                <p><strong>연락처:</strong> ${museum.phone || '정보 없음'}</p>
+                <button class="btn-detail" data-museum-id="${museum.id}">상세보기</button>
             `;
-            museumListContainer.appendChild(museumCard);
+            // '상세보기' 버튼 클릭 이벤트 리스너
+            museumItem.querySelector('.btn-detail').addEventListener('click', function() {
+                showMuseumDetailModal(museum);
+            });
+            museumListDiv.appendChild(museumItem);
+
+            // 지도 마커 추가
+            if (museum.latitude && museum.longitude) {
+                displayMarker(museum); // displayMarker 함수 호출
+            }
         });
     }
 
-    // 2. 이벤트 리스너 연결 (수정 없음)
-    searchButton.addEventListener('click', loadAndFilterMuseums);
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            loadAndFilterMuseums();
+    // 4. 필터 적용 함수
+    function applyFilters() {
+        const selectedCity = citySelect.value;
+        // const selectedType = museumTypeSelect.value; // 유형 선택 드롭다운 제거
+
+        let filteredData = allMuseums;
+
+        if (selectedCity) {
+            // [수정] museum.city 필드를 직접 사용하여 필터링
+            // views.py에서 city 필드가 표준화된 전체 이름(예: "서울특별시")으로 제공됨
+            filteredData = filteredData.filter(museum => museum.city && museum.city === selectedCity);
         }
-    });
-    regionSelect.addEventListener('change', loadAndFilterMuseums);
-    typeSelect.addEventListener('change', loadAndFilterMuseums);
-    resetButton.addEventListener('click', function() {
-        searchInput.value = '';
-        regionSelect.value = '';
-        typeSelect.value = '';
-        loadAndFilterMuseums(); // 필터 초기화 후 다시 불러오기
+        // if (selectedType) {
+        //     filteredData = filteredData.filter(museum => museum.type && museum.type.toLowerCase() === selectedType.toLowerCase());
+        // }
+        renderMuseums(filteredData);
+    }
+
+    // 5. 모달에 상세 정보 표시 함수
+    function showMuseumDetailModal(museum) {
+        museumDetailModalLabel.textContent = museum.name; // 모달 제목 설정
+
+        let modalBodyContent = `
+            <div class="detail-section">
+                <p><strong>주소:</strong> ${museum.address}</p>
+                <p><strong>유형:</strong> ${museum.type || '정보 없음'}</p>
+                <p><strong>개관일:</strong> ${museum.opening_date || '정보 없음'}</p>
+                <p><strong>운영시간:</strong> ${museum.operating_hours || '정보 없음'}</p>
+                <p><strong>연락처:</strong> ${museum.phone || '정보 없음'}</p>
+            </div>
+        `;
+
+        // 웹사이트 정보가 있을 경우 추가
+        if (museum.website && museum.website !== '정보 없음' && museum.website !== 'N/A' && museum.website.trim() !== '') {
+            // URL이 'http' 또는 'https'로 시작하지 않으면 추가
+            let websiteUrl = museum.website;
+            if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+                websiteUrl = 'http://' + websiteUrl; // 기본적으로 http:// 추가
+            }
+            modalBodyContent += `
+                <div class="detail-section website-link">
+                    <p><strong>웹사이트:</strong> <a href="${websiteUrl}" target="_blank">${museum.website}</a></p>
+                </div>
+            `;
+        }
+
+        museumDetailModalBody.innerHTML = modalBodyContent; // 모달 본문 내용 설정
+        museumDetailModal.show(); // 모달 표시
+    }
+
+
+    // 6. 이벤트 리스너 연결
+    citySelect.addEventListener('change', applyFilters);
+    // museumTypeSelect.addEventListener('change', applyFilters); // 유형 선택 드롭다운 제거
+    resetFilterBtn.addEventListener('click', function() {
+        citySelect.value = '';
+        // museumTypeSelect.value = ''; // 유형 선택 드롭다운 제거
+        renderMuseums(allMuseums); // 전체 데이터로 초기화
     });
 
-    // [추가 사항] 초기 데이터 로드를 위한 함수.
-    // 이 함수는 gallery.html 내에서 <script> 태그로 호출될 예정입니다.
-    window.initializeGalleryData = function(data) {
-        allMuseums = data;
-        loadAndFilterMuseums(); // 데이터 로드 후 초기 필터링 및 렌더링
-    };
-    // [추가 사항] End
-
-    // [주석 처리] 초기 갤러리 로드 (이전 API 방식. 이제 initializeGalleryData가 대신함)
-    // fetchMuseums(); 
-    // [주석 처리] End
+    // 7. 초기 데이터 로드 및 초기화
+    const museumDataScript = document.getElementById('museum-data-json');
+    if (museumDataScript && museumDataScript.textContent) {
+        try {
+            allMuseums = JSON.parse(museumDataScript.textContent);
+            console.log("Initial museum data loaded from hidden script tag:", allMuseums);
+            initMap(); // 지도 먼저 초기화
+            renderMuseums(allMuseums); // 초기 필터링 없이 전체 데이터 렌더링 (지도 마커 포함)
+        } catch (error) {
+            console.error("Error parsing museum data from hidden script tag:", error);
+            museumListDiv.innerHTML = '<p class="text-red-500">전시관 데이터를 불러오는 데 실패했습니다.</p>';
+        }
+    } else {
+        console.error("No museum data found in hidden script tag or script tag is empty.");
+        museumListDiv.innerHTML = '<p class="text-red-500">전시관 데이터를 불러오는 데 실패했습니다.</p>';
+    }
 });

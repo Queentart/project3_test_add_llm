@@ -16,6 +16,8 @@ from django.core.files.storage import default_storage # Django 스토리지 사�
 from llm_cores.negative_prompts import NEGATIVE_PROMPT_MAP
 # positive_prompts.py에서 POSITIVE_PROMPT_MAP 임포트
 from llm_cores.positive_prompts import POSITIVE_PROMPT_MAP
+# [수정] Ollama 번역 함수 대신 기존 translation_service의 translate_text 함수 임포트
+from llm_cores.translation_service import translate_text 
 
 logger = logging.getLogger(__name__)
 
@@ -27,263 +29,238 @@ JSON_DEFINITIONS_DIR = os.path.join(BASE_DIR, 'comfyui_workflows')
 COMFYUI_API_URL = settings.COMFYUI_API_URL
 COMFYUI_HISTORY_URL = settings.COMFYUI_HISTORY_URL
 COMFYUI_IMAGE_URL = settings.COMFYUI_IMAGE_URL
-COMFYUI_INPUT_DIR = getattr(settings, 'COMFYUI_INPUT_DIR', os.path.join(settings.MEDIA_ROOT, 'comfyui_input'))
+COMFYUI_INPUT_DIR = getattr(settings, 'COMFYUI_INPUT_DIR', os.path.join(BASE_DIR, 'comfyui_input'))
 
 
-# ComfyUI에 요청을 보내는 비동기 함수
-async def queue_prompt(prompt_workflow):
+# [수정] generate_image_based_on_json_logic 함수의 매개변수 이름을 'uploaded_image_path'로 명확히 일치시켰습니다.
+async def generate_image_based_on_json_logic(user_input, uploaded_image_path, mode, positive_categories, negative_categories):
     """
-    ComfyUI에 워크플로우 프롬프트를 큐에 추가합니다.
-    """
-    uri = f"{COMFYUI_API_URL}/prompt"
-    logger.info(f"Sending prompt to ComfyUI: {uri}")
-    try:
-        async with httpx.AsyncClient(timeout=300.0) as client:
-            response = await client.post(uri, json=prompt_workflow)
-            response.raise_for_status()  # HTTP 오류가 발생하면 예외 발생
-            return response.json()
-    except httpx.RequestError as e:
-        logger.error(f"ComfyUI API request failed: {e}", exc_info=True)
-        raise
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to decode JSON response from ComfyUI: {e}", exc_info=True)
-        raise
-
-async def get_history(prompt_id):
-    """
-    ComfyUI에서 특정 prompt_id에 대한 히스토리를 가져옵니다.
-    """
-    uri = f"{COMFYUI_HISTORY_URL}/{prompt_id}"
-    logger.info(f"Fetching history from ComfyUI: {uri}")
-    try:
-        async with httpx.AsyncClient(timeout=300.0) as client:
-            response = await client.get(uri)
-            response.raise_for_status()
-            return response.json()
-    except httpx.RequestError as e:
-        logger.error(f"ComfyUI history request failed: {e}", exc_info=True)
-        raise
-
-async def get_image(filename, subfolder, folder_type):
-    """
-    ComfyUI로부터 이미지를 다운로드합니다.
-    """
-    uri = f"{COMFYUI_IMAGE_URL}/{filename}?subfolder={subfolder}&type={folder_type}"
-    logger.info(f"Downloading image from ComfyUI: {uri}")
-    try:
-        async with httpx.AsyncClient(timeout=300.0) as client:
-            response = await client.get(uri)
-            response.raise_for_status()
-            return response.content
-    except httpx.RequestError as e:
-        logger.error(f"ComfyUI image download failed: {e}", exc_info=True)
-        raise
-
-
-async def generate_image_based_on_json_logic(
-    workflow_json_filename: str,
-    user_prompt: str,
-    user_negative_prompt: str,
-    image_base64: str = None, # i2i를 위한 base64 인코딩된 이미지 데이터
-    denoising_strength: float = 0.7, # i2i를 위한 denoising_strength (0.0~1.0)
-    image_width: int = 1024,
-    image_height: int = 1024,
-    model_name: str = "sd_xl_base_1.0.safetensors",
-    lora_model_name: str = None, # LoRA 모델 파일 이름
-    lora_strength_model: float = 1.0, # LoRA 모델 적용 강도
-    lora_strength_clip: float = 1.0, # LoRA CLIP 적용 강도
-    seed: int = None, # 시드 값
-    positive_prompt_categories: list = None, # 추가: 긍정 프롬프트 카테고리 리스트
-    negative_prompt_categories: list = None # 추가: 부정 프롬프트 카테고리 리스트
-) -> dict:
-    """
-    지정된 JSON 워크플로우 파일을 기반으로 ComfyUI를 통해 이미지를 생성합니다.
+    주어진 사용자 입력, 이미지 파일 경로, 모드 및 프롬프트 카테고리에 따라 ComfyUI를 사용하여 이미지를 생성합니다.
 
     Args:
-        workflow_json_filename (str): 사용할 ComfyUI 워크플로우 JSON 파일명 (예: "txt2img_api_workflow.json").
-        user_prompt (str): 사용자 입력 긍정 프롬프트.
-        user_negative_prompt (str): 사용자 입력 부정 프롬프트.
-        image_base64 (str, optional): Base64 인코딩된 이미지 데이터. i2i의 경우에만 필요. Defaults to None.
-        denoising_strength (float, optional): i2i 노이즈 제거 강도. Defaults to 0.7.
-        image_width (int, optional): 생성할 이미지의 가로 길이. Defaults to 1024.
-        image_height (int, optional): 생성할 이미지의 세로 길이. Defaults to 1024.
-        model_name (str, optional): 사용할 모델 파일 이름. Defaults to "sd_xl_base_1.0.safetensors".
-        lora_model_name (str, optional): 사용할 LoRA 모델 파일 이름. Defaults to None.
-        lora_strength_model (float, optional): LoRA 모델 적용 강도. Defaults to 1.0.
-        lora_strength_clip (float, optional): LoRA CLIP 적용 강도. Defaults to 1.0.
-        seed (int, optional): 이미지 생성에 사용할 시드 값. Defaults to None (랜덤 시드).
-        positive_prompt_categories (list, optional): 적용할 긍정 프롬프트 카테고리 리스트. Defaults to None.
-        negative_prompt_categories (list, optional): 적용할 부정 프롬프트 카테고리 리스트. Defaults to None.
+        user_input (str): 사용자가 입력한 텍스트 프롬프트.
+        uploaded_image_path (str or None): 업로드된 이미지 파일의 실제 파일 시스템 경로 (image-to-image 모드용).
+        mode (str): 'image_generation' 또는 'curator'.
+        positive_categories (list): 적용할 긍정 프롬프트 카테고리 목록.
+        negative_categories (list): 적용할 부정 프롬프트 카테고리 목록.
 
     Returns:
-        dict: 생성된 이미지 파일 경로와 ComfyUI에서 제공하는 이미지 URL을 포함하는 딕셔너리.
+        dict: 생성된 이미지의 파일 경로 및 ComfyUI URL을 포함하는 딕셔너리.
     """
-    logger.info(f"Starting image generation with workflow: {workflow_json_filename}")
-
-    # 시드 값이 제공되지 않으면 랜덤 시드 생성
-    if seed is None:
-        seed = random.randint(0, 2**32 - 1)
-        logger.info(f"Using random seed: {seed}")
-    else:
-        logger.info(f"Using provided seed: {seed}")
-
     try:
-        # JSON 워크플로우 파일 로드
-        workflow_path = os.path.join(JSON_DEFINITIONS_DIR, workflow_json_filename)
-        with open(workflow_path, 'r', encoding='utf-8') as f:
+        # 1. 워크플로우 JSON 파일 로드
+        # [수정] image_file 대신 uploaded_image_path의 존재 여부로 모드 판단
+        json_file_name = 'image_to_image.json' if uploaded_image_path else 'text_to_image.json'
+        json_path = os.path.join(JSON_DEFINITIONS_DIR, json_file_name)
+
+        if not os.path.exists(json_path):
+            logger.error(f"JSON config file not found: {json_path}")
+            raise FileNotFoundError(f"JSON config file not found: {json_path}")
+
+        with open(json_path, 'r', encoding='utf-8') as f:
             prompt_workflow = json.load(f)
 
-        # -------------------------------------------------------------
-        # [수정 시작] 프롬프트 텍스트 및 카테고리 기반 프롬프트 조합 로직
-        # -------------------------------------------------------------
-        # 긍정 프롬프트 조합
-        combined_positive_prompt = user_prompt
-        if positive_prompt_categories:
-            for category in positive_prompt_categories:
-                if category in POSITIVE_PROMPT_MAP:
-                    combined_positive_prompt += f", {POSITIVE_PROMPT_MAP[category]}"
+        # ComfyUI API는 'prompt' 키 아래에 실제 워크플로우 그래프를 기대합니다.
+        # JSON 파일 자체가 워크플로우인 경우도 있으므로, 'prompt' 키가 없으면 전체를 사용합니다.
+        json_data = prompt_workflow.get('prompt', prompt_workflow)
+
+        # 2. 프롬프트 업데이트 (긍정/부정)
+        # 사용자 입력(user_input)을 기존 translation_service를 사용하여 영어로 번역
+        translated_user_input = translate_text(user_input, source_lang='ko', target_lang='en')
+        if not translated_user_input or "Translation failed" in translated_user_input: # 번역 실패 시 원본 사용 또는 오류 처리
+            logger.warning(f"Translation failed for '{user_input}', using original text.")
+            translated_user_input = user_input # 번역 실패 시 원본 텍스트 사용
+
+        # 긍정 프롬프트 조합: 번역된 사용자 입력 + 선택된 긍정 카테고리 프롬프트
+        combined_positive_prompt_parts = [translated_user_input]
+        for category in positive_categories:
+            if category in POSITIVE_PROMPT_MAP:
+                combined_positive_prompt_parts.append(POSITIVE_PROMPT_MAP[category])
+        combined_positive_prompt_text = ", ".join(filter(None, combined_positive_prompt_parts))
+
+        # 부정 프롬프트 조합: 기본 부정 프롬프트 + 선택된 부정 카테고리 프롬프트
+        combined_negative_prompt_parts = []
+        
+        # 기본 부정 프롬프트는 항상 추가
+        default_negative_prompt = NEGATIVE_PROMPT_MAP.get("bad_quality", "low quality, bad quality")
+        if default_negative_prompt:
+            combined_negative_prompt_parts.append(default_negative_prompt)
+
+        # 사용자가 선택한 카테고리별 부정 프롬프트를 추가 (중복 방지)
+        for category in negative_categories:
+            if category in NEGATIVE_PROMPT_MAP:
+                prompt_from_category = NEGATIVE_PROMPT_MAP[category]
+                if prompt_from_category and prompt_from_category not in combined_negative_prompt_parts:
+                    combined_negative_prompt_parts.append(prompt_from_category)
+        
+        combined_negative_prompt_text = ", ".join(filter(None, combined_negative_prompt_parts))
+
+        # 워크플로우 JSON에서 긍정/부정 프롬프트 노드 찾기 및 업데이트
+        if json_file_name == 'text_to_image.json':
+            # text_to_image.json의 경우 "6"과 "7" 노드가 CLIPTextEncode에 해당
+            if '6' in json_data and 'inputs' in json_data['6'] and 'text' in json_data['6']['inputs']:
+                json_data['6']['inputs']['text'] = combined_positive_prompt_text
+                logger.info(f"Updated positive prompt in node 6: {combined_positive_prompt_text}")
+            else:
+                logger.warning("Node '6' or its 'inputs.text' not found for positive prompt in text_to_image workflow.")
+
+            if '7' in json_data and 'inputs' in json_data['7'] and 'text' in json_data['7']['inputs']:
+                json_data['7']['inputs']['text'] = combined_negative_prompt_text
+                logger.info(f"Updated negative prompt in node 7: {combined_negative_prompt_text}")
+            else:
+                logger.warning("Node '7' or its 'inputs.text' not found for negative prompt in text_to_image workflow.")
+        
+        elif json_file_name == 'image_to_image.json':
+            # image_to_image.json의 경우 "11"과 "10" 노드가 CLIPTextEncodeLumina2에 해당
+            if '11' in json_data and 'inputs' in json_data['11'] and 'user_prompt' in json_data['11']['inputs']:
+                json_data['11']['inputs']['user_prompt'] = combined_positive_prompt_text
+                logger.info(f"Updated positive user_prompt in node 11 (Lumina2): {combined_positive_prompt_text}")
+            else:
+                logger.warning("Node '11' or its 'inputs.user_prompt' not found for Lumina2 positive prompt in image_to_image workflow.")
+
+            if '10' in json_data and 'inputs' in json_data['10'] and 'user_prompt' in json_data['10']['inputs']:
+                json_data['10']['inputs']['user_prompt'] = combined_negative_prompt_text
+                logger.info(f"Updated negative user_prompt in node 10 (Lumina2): {combined_negative_prompt_text}")
+            else:
+                logger.warning("Node '10' or its 'inputs.user_prompt' not found for Lumina2 negative prompt in image_to_image workflow.")
+
+
+        # 3. KSampler (Seed, Denoise, CFG) 가중치 업데이트
+        ksampler_node_id = None
+        if json_file_name == 'text_to_image.json':
+            ksampler_node_id = '3' # text_to_image.json의 KSampler 노드 ID
+        elif json_file_name == 'image_to_image.json':
+            ksampler_node_id = '5' # image_to_image.json의 KSampler 노드 ID
+
+        if ksampler_node_id and ksampler_node_id in json_data and \
+           'inputs' in json_data[ksampler_node_id]:
+            # 시드 값 랜덤 설정
+            if 'seed' in json_data[ksampler_node_id]['inputs']:
+                json_data[ksampler_node_id]['inputs']['seed'] = random.randint(0, 2**32 - 1)
+                logger.info(f"Updated KSampler seed in node {ksampler_node_id}: {json_data[ksampler_node_id]['inputs']['seed']}")
+
+            # Denoise 값 조절 (특히 image-to-image 모드에서)
+            if 'denoise' in json_data[ksampler_node_id]['inputs']:
+                if uploaded_image_path: # Image-to-Image 모드일 때
+                    # 원본 이미지의 형태를 보존하면서 스타일을 적용하기 위한 값 (0.5 ~ 0.8)
+                    json_data[ksampler_node_id]['inputs']['denoise'] = 0.7 
+                    logger.info(f"Updated KSampler denoise for image-to-image in node {ksampler_node_id}: {json_data[ksampler_node_id]['inputs']['denoise']}")
+                else: # Text-to-Image 모드일 때
+                    # Text-to-Image에서는 완전히 무작위 노이즈에서 시작하므로 1.0이 기본값입니다.
+                    json_data[ksampler_node_id]['inputs']['denoise'] = 1.0 
+                    logger.info(f"Set KSampler denoise for text-to-image in node {ksampler_node_id}: {json_data[ksampler_node_id]['inputs']['denoise']}")
+            else:
+                logger.warning(f"Node '{ksampler_node_id}' has no 'denoise' input.")
+            
+            # CFG (Classifier Free Guidance) 값 조절
+            if 'cfg' in json_data[ksampler_node_id]['inputs']:
+                # 프롬프트의 영향력을 조절합니다. 스타일 적용을 강화하기 위해 8.0에서 9.0으로 상향 조정.
+                # 일반적으로 7.0 ~ 10.0 사이에서 최적값을 찾습니다.
+                json_data[ksampler_node_id]['inputs']['cfg'] = 9.0 # 제안값: 9.0
+                logger.info(f"Updated KSampler cfg in node {ksampler_node_id}: {json_data[ksampler_node_id]['inputs']['cfg']}")
+            else:
+                logger.warning(f"Node '{ksampler_node_id}' has no 'cfg' input.")
+
+        else:
+            logger.warning(f"Node '{ksampler_node_id}' or its 'inputs' not found for KSampler in workflow {json_file_name}.")
+
+        # 4. IPAdapter Weight 업데이트 (Image-to-Image 전용)
+        if uploaded_image_path and json_file_name == 'image_to_image.json':
+            ipadapter_node_id = '7' # IPAdapter Advanced 노드 ID
+            if ipadapter_node_id in json_data and \
+               'inputs' in json_data[ipadapter_node_id] and 'weight' in json_data[ipadapter_node_id]['inputs']:
+                # IPAdapter의 weight 조절.
+                # 이 값이 높을수록 원본 이미지의 스타일이나 내용이 더 강하게 반영됩니다.
+                # 'denoise'와 함께 조절하여 원본 형태 보존과 새로운 화풍 적용의 조화를 찾습니다.
+                # 현재는 1.0으로 유지하여 원본 이미지의 내용 반영을 돕고, 화풍은 CFG와 프롬프트에 더 의존합니다.
+                json_data[ipadapter_node_id]['inputs']['weight'] = 1.0 # 제안값: 1.0
+                logger.info(f"Updated IPAdapter weight in node {ipadapter_node_id}: {json_data[ipadapter_node_id]['inputs']['weight']}")
+            else:
+                logger.warning(f"Node '{ipadapter_node_id}' or its 'inputs.weight' not found for IPAdapter.")
+
+
+        # 5. image-to-image 특정 로직 처리 (LoadImage 노드 업데이트)
+        if uploaded_image_path:
+            # 업로드된 이미지 파일을 ComfyUI input 디렉토리에 저장
+            # Django storage를 통해 이미 저장된 파일이므로, 해당 경로에서 읽어와 ComfyUI input에 복사합니다.
+            # 파일명을 UUID로 생성하여 중복 방지
+            file_extension = os.path.splitext(uploaded_image_path)[1] # 경로에서 확장자 추출
+            input_filename = f"{uuid.uuid4()}{file_extension}"
+            comfyui_target_path = os.path.join(settings.COMFYUI_INPUT_DIR, input_filename)
+
+            # [수정] default_storage.open을 사용하여 이미 저장된 파일을 읽습니다.
+            with default_storage.open(uploaded_image_path, 'rb') as f:
+                image_content = f.read()
+                # ComfyUI input 디렉토리에 ContentFile로 저장
+                saved_input_file_name = default_storage.save(comfyui_target_path, ContentFile(image_content))
+            
+            full_input_file_path = default_storage.path(saved_input_file_name)
+            logger.info(f"Uploaded image copied to ComfyUI input: {full_input_file_path}")
+
+            # ComfyUI 워크플로우의 LoadImage 노드 업데이트 (일반적으로 "9"번 노드)
+            if '9' in json_data and 'inputs' in json_data['9'] and 'image' in json_data['9']['inputs']:
+                json_data['9']['inputs']['image'] = input_filename
+                logger.info(f"Updated LoadImage node 9 with filename: {input_filename}")
+            else:
+                logger.warning("Node '9' or its 'inputs.image' not found for LoadImage in workflow.")
+
+
+        # 6. ComfyUI API 호출 및 이미지 생성 완료 대기, 다운로드
+        logger.info(f"Final JSON data to send to ComfyUI: {json.dumps(json_data, indent=2)}")
+
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            response = await client.post(f"{COMFYUI_API_URL}/prompt", json={'prompt': json_data})
+            response.raise_for_status() # HTTP 오류가 발생하면 예외를 발생시킵니다.
+
+            prompt_id = response.json()['prompt_id']
+            logger.info(f"ComfyUI prompt submitted, ID: {prompt_id}")
+
+            # 이미지 생성 완료 대기 및 다운로드
+            while True:
+                history_response = await client.get(f"{COMFYUI_HISTORY_URL}?prompt_id={prompt_id}")
+                history_response.raise_for_status()
+                history_data = history_response.json()
+
+                if 'history' in history_data and str(prompt_id) in history_data['history']:
+                    outputs = history_data['history'][str(prompt_id)]['outputs']
+                elif str(prompt_id) in history_data:
+                    outputs = history_data[str(prompt_id)]['outputs']
                 else:
-                    logger.warning(f"Unknown positive prompt category: {category}")
-        logger.info(f"Final combined positive prompt: {combined_positive_prompt}")
+                    await asyncio.sleep(1)
+                    continue
 
-        # 부정 프롬프트 조합
-        combined_negative_prompt = user_negative_prompt
-        if negative_prompt_categories:
-            for category in negative_prompt_categories:
-                if category in NEGATIVE_PROMPT_MAP:
-                    combined_negative_prompt += f", {NEGATIVE_PROMPT_MAP[category]}"
-                else:
-                    logger.warning(f"Unknown negative prompt category: {category}")
-        logger.info(f"Final combined negative prompt: {combined_negative_prompt}")
+                image_info = None
+                for node_id in outputs:
+                    if 'images' in outputs[node_id]:
+                        image_info = outputs[node_id]['images'][0] # 첫 번째 이미지를 가져옵니다.
+                        break
+                if image_info:
+                    filename = image_info['filename']
+                    subfolder = image_info['subfolder']
+                    type = image_info['type']
+                    break
+                await asyncio.sleep(1) # 1초 대기 후 다시 폴링
 
-        # ComfyUI 워크플로우 JSON 업데이트
-        # 텍스트 프롬프트 업데이트 (6번 노드)
-        # ComfyUI의 기본 텍스트 인코딩 노드 ID가 6이라고 가정
-        if "6" in prompt_workflow["nodes"]:
-            prompt_workflow["nodes"]["6"]["inputs"]["text"] = combined_positive_prompt
-            logger.debug(f"Positive prompt node 6 updated with: {combined_positive_prompt}")
+            comfyui_served_image_url = f"{COMFYUI_IMAGE_URL}?filename={filename}&subfolder={subfolder}&type={type}"
+            logger.info(f"Generated image URL from ComfyUI: {comfyui_served_image_url}")
+
+            # 7. 생성된 이미지 다운로드 및 Django 스토리지에 저장
+            image_response = await client.get(comfyui_served_image_url, timeout=300)
+            image_response.raise_for_status()
+        
+        if subfolder:
+            django_storage_path = os.path.join(settings.COMFYUI_OUTPUT_DIR, subfolder, filename)
         else:
-            logger.warning("Node 6 (positive prompt) not found in workflow. Skipping positive prompt update.")
+            django_storage_path = os.path.join(settings.COMFYUI_OUTPUT_DIR, filename)
 
-        # 부정 텍스트 프롬프트 업데이트 (7번 노드)
-        # ComfyUI의 기본 부정 텍스트 인코딩 노드 ID가 7이라고 가정
-        if "7" in prompt_workflow["nodes"]:
-            prompt_workflow["nodes"]["7"]["inputs"]["text"] = combined_negative_prompt
-            logger.debug(f"Negative prompt node 7 updated with: {combined_negative_prompt}")
-        else:
-            logger.warning("Node 7 (negative prompt) not found in workflow. Skipping negative prompt update.")
+        saved_file_name = default_storage.save(django_storage_path, ContentFile(image_response.content))
         
-        # -------------------------------------------------------------
-        # [수정 끝] 프롬프트 텍스트 및 카테고리 기반 프롬프트 조합 로직
-        # -------------------------------------------------------------
-
-        # 시드 업데이트 (23번 노드: 이 노드 ID는 ComfyUI 워크플로우에 따라 다를 수 있습니다.)
-        # KSampler 또는 LatentFromNoise 노드의 seed를 업데이트한다고 가정
-        seed_updated = False
-        for node_id, node_data in prompt_workflow["nodes"].items():
-            if "inputs" in node_data and "seed" in node_data["inputs"]:
-                prompt_workflow["nodes"][node_id]["inputs"]["seed"] = seed
-                logger.debug(f"Seed updated in node {node_id} to: {seed}")
-                seed_updated = True
-                break # 첫 번째 시드 노드만 업데이트한다고 가정
-        if not seed_updated:
-            logger.warning("No node with 'seed' input found. Seed might not be applied correctly.")
-
-
-        # 모델 업데이트 (4번 노드: CheckpointLoaderSimple 노드 ID가 4라고 가정)
-        if "4" in prompt_workflow["nodes"] and "ckpt_name" in prompt_workflow["nodes"]["4"]["inputs"]:
-            prompt_workflow["nodes"]["4"]["inputs"]["ckpt_name"] = model_name
-            logger.debug(f"Model updated to: {model_name}")
-        else:
-            logger.warning("Node 4 (model loader) not found or 'ckpt_name' input missing. Skipping model update.")
-
-        # 이미지 크기 업데이트 (8번 노드: EmptyLatentImage 노드 ID가 8이라고 가정)
-        if "8" in prompt_workflow["nodes"] and "width" in prompt_workflow["nodes"]["8"]["inputs"] and "height" in prompt_workflow["nodes"]["8"]["inputs"]:
-            prompt_workflow["nodes"]["8"]["inputs"]["width"] = image_width
-            prompt_workflow["nodes"]["8"]["inputs"]["height"] = image_height
-            logger.debug(f"Image size updated to: {image_width}x{image_height}")
-        else:
-            logger.warning("Node 8 (latent image) not found or width/height inputs missing. Skipping size update.")
-
-        # i2i 관련 노드 업데이트 (json_workflow_filename이 "img2img_api_workflow.json"일 경우)
-        if workflow_json_filename == "img2img_api_workflow.json" and image_base64:
-            # 24번 노드: Load Image (Base64) 노드라고 가정
-            if "24" in prompt_workflow["nodes"] and "image_base64" in prompt_workflow["nodes"]["24"]["inputs"]:
-                prompt_workflow["nodes"]["24"]["inputs"]["image_base64"] = image_base64
-                logger.debug("Image base64 updated in node 24.")
-            else:
-                logger.warning("Node 24 (Load Image Base64) not found or 'image_base64' input missing. Skipping image base64 update.")
-
-            # 23번 노드: KSampler (For I2I) 노드의 denoising_strength 업데이트라고 가정
-            if "23" in prompt_workflow["nodes"] and "denoise" in prompt_workflow["nodes"]["23"]["inputs"]:
-                prompt_workflow["nodes"]["23"]["inputs"]["denoise"] = denoising_strength
-                logger.debug(f"Denoising strength updated to: {denoising_strength}")
-            else:
-                logger.warning("Node 23 (KSampler for i2i) not found or 'denoise' input missing. Skipping denoising strength update.")
-        
-        # LoRA 적용 (lora_model_name이 제공될 경우)
-        if lora_model_name:
-            # 22번 노드: LoRA Loader 노드 ID가 22라고 가정 (워크플로우에 따라 다를 수 있음)
-            if "22" in prompt_workflow["nodes"] and \
-               "lora_name" in prompt_workflow["nodes"]["22"]["inputs"] and \
-               "strength_model" in prompt_workflow["nodes"]["22"]["inputs"] and \
-               "strength_clip" in prompt_workflow["nodes"]["22"]["inputs"]:
-                prompt_workflow["nodes"]["22"]["inputs"]["lora_name"] = lora_model_name
-                prompt_workflow["nodes"]["22"]["inputs"]["strength_model"] = lora_strength_model
-                prompt_workflow["nodes"]["22"]["inputs"]["strength_clip"] = lora_strength_clip
-                logger.debug(f"LoRA '{lora_model_name}' applied with strengths model:{lora_strength_model}, clip:{lora_strength_clip}")
-            else:
-                logger.warning("Node 22 (LoRA Loader) not found or inputs missing. Skipping LoRA application.")
-
-        # ComfyUI API 호출
-        logger.info("Queuing prompt to ComfyUI...")
-        response = await queue_prompt(prompt_workflow)
-        
-        prompt_id = response['prompt_id']
-        logger.info(f"Prompt queued successfully with ID: {prompt_id}")
-
-        # 이미지 생성 완료 대기 및 다운로드
-        output_images = await get_images_from_history(prompt_id)
-        
-        if not output_images:
-            logger.error(f"No images found for prompt ID: {prompt_id}")
-            raise ValueError("No images generated by ComfyUI.")
-
-        # 첫 번째 이미지 처리 (대부분 하나의 이미지를 생성한다고 가정)
-        image_info = output_images[0]
-        filename = image_info['filename']
-        subfolder = image_info['subfolder']
-        folder_type = image_info['type']
-
-        # ComfyUI에서 이미지 다운로드
-        image_content = await get_image(filename, subfolder, folder_type)
-        
-        # Django 스토리지에 이미지 저장
-        # 이미지 파일명을 UUID로 변경하여 저장
-        unique_filename = f"{uuid.uuid4()}.png" # PNG로 강제 저장
-        
-        # Django settings.COMFYUI_OUTPUT_DIR에 정의된 경로의 하위 폴더에 저장
-        # 예를 들어, 'generated_images' 서브폴더에 저장한다고 가정 (settings.py에서 정의)
-        subfolder_in_media = 'generated_images' 
-        
-        # 저장할 최종 경로 결정
-        # Django storage 시스템에 맞는 경로를 생성
-        django_storage_path = os.path.join(subfolder_in_media, unique_filename)
-
-        # ContentFile를 사용하여 이미지 데이터를 저장 (Django storage 시스템 사용)
-        saved_file_name = default_storage.save(django_storage_path, ContentFile(image_content))
-        
-        # 저장된 이미지의 완전한 파일 시스템 경로 (개발 환경에서만 유효)
         full_image_file_path = default_storage.path(saved_file_name)
         logger.info(f"Image saved to Django media: {full_image_file_path}")
 
-        # 클라이언트에서 접근할 수 있는 URL (MEDIA_URL 기준)
-        comfyui_served_image_url = default_storage.url(saved_file_name)
-
-
         return {
-            'image_file_path': full_image_file_path, # 실제 파일 시스템 경로 (백엔드 내부용)
-            'comfyui_image_url': comfyui_served_image_url # 클라이언트가 접근할 수 있는 URL
+            'image_file_path': full_image_file_path,
+            'comfyui_image_url': comfyui_served_image_url
         }
 
     except FileNotFoundError as e:
@@ -291,29 +268,18 @@ async def generate_image_based_on_json_logic(
         raise
     except httpx.RequestError as e:
         logger.error(f"Error connecting to ComfyUI API or during image download: {e}", exc_info=True)
+        if "client has been closed" in str(e).lower():
+            logger.error("HTTPX client closed error. Ensure AsyncClient is properly used within 'async with' context or manually closed.")
         raise
     except ValueError as e:
         logger.error(f"Value error in image generation logic: {e}", exc_info=True)
         raise
-    except Exception as e:
-        logger.critical(f"An unexpected error occurred during image generation: {e}", exc_info=True)
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decoding error in workflow file: {e}", exc_info=True)
         raise
-
-
-async def get_images_from_history(prompt_id):
-    """
-    ComfyUI 히스토리에서 생성된 이미지 정보를 추출합니다.
-    """
-    while True:
-        history = await get_history(prompt_id)
-        if prompt_id in history:
-            outputs = history[prompt_id]['outputs']
-            images = []
-            for node_id in outputs:
-                for image in outputs[node_id].get('images', []):
-                    images.append(image)
-            if images:
-                logger.info(f"Found {len(images)} images for prompt ID {prompt_id}.")
-                return images
-        logger.info(f"Waiting for image generation to complete for prompt ID: {prompt_id}...")
-        await asyncio.sleep(1) # 1초 간격으로 재시도
+    except KeyError as e:
+        logger.error(f"Missing key in ComfyUI workflow JSON: {e}. Please check your workflow JSON files.", exc_info=True)
+        raise
+    except Exception as e:
+        logger.error(f"An unexpected error occurred during image generation: {e}", exc_info=True)
+        raise
